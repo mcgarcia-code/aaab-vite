@@ -33,7 +33,8 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   POST cambiarEstadoDestino { id, idGrupo, estado }             → clip actualizado
 //   POST guardarAnotaciones  { idClip, anotaciones }              → clip actualizado (el autor o el coordinador general)
 //   GET  listarComentarios   { idClip }                           → [comentario]
-//   POST agregarComentario   { idClip, texto }                    → comentario (solo rol 2 y 4, coordinador general y admin)
+//   POST agregarComentario   { idClip, texto, segundo }           → comentario (solo rol 2 y 4, coordinador general y admin)
+//                                                                   segundo: momento del clip al que se refiere, o null
 //   POST borrarComentario    { id }                               → true (el autor, o el coordinador general)
 //   GET  listarListas        {}                                   → [{ id, nombre, idsClips }] del usuario
 //   POST guardarLista        { id?, nombre }                      → lista (alta o cambio de nombre)
@@ -66,7 +67,7 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   estado de cada destino: 'pendiente' | 'autorizado' | 'no_autorizado'
 //   anotación (dibujo sobre el video): { id, segundo, formas: [{ tipo: 'flecha'|'linea'|'circulo'|'libre', color, puntos: [[x, y]] }] }
 //     segundo: dentro del clip (desde su inicio); x e y entre 0 y 1 (proporción del cuadro)
-// Comentario: { id, idClip, idAutor, tipoAutor, autor, esCoordinacion, texto, creadoEl }
+// Comentario: { id, idClip, idAutor, tipoAutor, autor, esCoordinacion, texto, segundo, creadoEl } (segundo: del clip, o null)
 // Colección: { id, nombre, descripcion, idGrupo, nombreCanal, idsClips, actualizadoEl }
 // =====================================================================
 
@@ -216,7 +217,7 @@ const conServidor = {
   guardarAnotaciones: (idClip, anotaciones) => enviar('guardarAnotaciones', { idClip, anotaciones }),
 
   listarComentarios: async (idClip) => comoLista(await pedir('listarComentarios', { idClip })),
-  agregarComentario: (idClip, texto) => enviar('agregarComentario', { idClip, texto }),
+  agregarComentario: (idClip, texto, segundo = null) => enviar('agregarComentario', { idClip, texto, segundo }),
   borrarComentario: (id) => enviar('borrarComentario', { id }),
 
   listarListas: async () => comoLista(await pedir('listarListas')),
@@ -434,14 +435,14 @@ const enNavegador = (clavePanel, claveListas) => {
       ok: true,
       payload: leer(CLAVE_COMENTARIOS, []).filter(c => c.idClip === idClip)
     }),
-    agregarComentario: async (idClip, texto) => {
+    agregarComentario: async (idClip, texto, segundo = null) => {
       const usuario = auth.getUser() || {}
       if (!esRolPublicador(usuario)) {
         return { ok: false, payload: null, message: 'Solo observadores, coordinadores y la coordinación general pueden comentar.' }
       }
       const comentario = {
         id: nuevoId(), idClip, idAutor: usuario.id ?? null, tipoAutor: tipoUsuario(usuario), autor: nombreDe(usuario),
-        esCoordinacion: !!usuario.esAutoridad, texto, creadoEl: ahoraIso()
+        esCoordinacion: !!usuario.esAutoridad, texto, segundo, creadoEl: ahoraIso()
       }
       return escribir(CLAVE_COMENTARIOS, [...leer(CLAVE_COMENTARIOS, []), comentario])
         ? { ok: true, payload: comentario }

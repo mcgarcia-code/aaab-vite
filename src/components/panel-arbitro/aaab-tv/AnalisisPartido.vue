@@ -106,6 +106,10 @@
               Este navegador no puede reproducir este video (pasa con algunos videos de iPhone o WhatsApp, en HEVC o .mov).
               Probá abrirlo desde Chrome en el celular, o convertilo a MP4 (H.264) antes de analizarlo.
             </div>
+
+            <!-- Línea de tiempo por situación: ver, mover y ajustar cada clip -->
+            <LineaTiempoPistas v-if="video.duracion && clipsDescargables.length" :duracion="video.duracion" :tiempo="tiempoActual"
+                               :tags="tagsOrdenados" :botones="botones" @saltar="irAlSegundo" @ver="verClip" />
           </template>
         </section>
 
@@ -440,6 +444,7 @@ import { useCuadrosPorSegundo } from '@/composables/useCuadrosPorSegundo'
 import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 import SelectorCanales from '@/components/panel-arbitro/aaab-tv/SelectorCanales.vue'
 import CamarasPartido from '@/components/panel-arbitro/aaab-tv/CamarasPartido.vue'
+import LineaTiempoPistas from '@/components/panel-arbitro/aaab-tv/LineaTiempoPistas.vue'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
 
 const emit = defineEmits(['publicado'])
@@ -567,6 +572,14 @@ const marcasLinea = computed(() =>
     }
   })
 )
+
+// Desde la línea de tiempo: lleva el video a ese segundo
+const irAlSegundo = (segundo) => {
+  const v = videoRef.value
+  if (!v) return
+  finPrevia.value = null
+  v.currentTime = segundo
+}
 
 const verClip = (t) => {
   const v = videoRef.value

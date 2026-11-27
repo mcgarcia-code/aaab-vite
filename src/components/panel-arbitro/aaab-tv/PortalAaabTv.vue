@@ -91,7 +91,7 @@
     <ModalBase :show="!!clipAbierto" :titulo="clipAbierto?.titulo" icono="bi-play-btn" color-icono="bg-danger-subtle text-danger"
                max-width="860px" @close="clipAbierto = null">
       <template v-if="clipAbierto">
-        <ReproductorClip v-bind="tramoDe(clipAbierto)" :anotaciones="clipAbierto.anotaciones || []" :puede-anotar="modoAdmin || esPropio(clipAbierto)"
+        <ReproductorClip ref="reproductor" v-bind="tramoDe(clipAbierto)" :comentarios="comentariosClip" @posicion="p => posicionClip = p" :anotaciones="clipAbierto.anotaciones || []" :puede-anotar="modoAdmin || esPropio(clipAbierto)"
                          :guardando="guardandoDibujo" @guardar-anotaciones="guardarDibujos" />
         <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
           <span class="badge-tag" :style="{ background: colorTag(clipAbierto.color).solido }">{{ clipAbierto.etiqueta }}</span>
@@ -145,7 +145,8 @@
           </div>
         </div>
 
-        <ComentariosClip :id-clip="clipAbierto.id" :moderar="modoAdmin" />
+        <ComentariosClip :id-clip="clipAbierto.id" :moderar="modoAdmin" :posicion-actual="posicionClip"
+                         @ir-a="s => reproductor?.irA(s)" @cambiaron="l => comentariosClip = l" />
       </template>
       <template #footer>
         <div class="d-flex justify-content-between w-100 gap-2">
@@ -299,6 +300,16 @@ watch([vistaActiva, busqueda, etiquetaActiva], () => { paginaActual.value = 1 })
 watch(vistaActiva, () => { etiquetaActiva.value = '' })
 
 // ─── Dibujos sobre el video (los guarda el autor del clip) ───
+// Reproductor y comentarios del clip abierto: posición actual y comentarios con momento
+const reproductor = ref(null)
+const posicionClip = ref(null)
+const comentariosClip = ref([])
+watch(clipAbierto, (nuevo, anterior) => {
+  if (nuevo?.id === anterior?.id) return
+  posicionClip.value = null
+  comentariosClip.value = []
+})
+
 const guardandoDibujo = ref(false)
 const guardarDibujos = async (anotaciones) => {
   const clip = clipAbierto.value

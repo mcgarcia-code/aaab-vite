@@ -35,6 +35,13 @@
       <span class="relleno" :style="{ width: porcentaje(posicion) + '%' }"></span>
       <!-- Dibujos guardados: una marca en su segundo -->
       <span v-for="a in anotaciones" :key="a.id" class="marca-dibujo" :style="{ left: porcentaje(a.segundo) + '%' }" :title="`Dibujo en ${formatearTiempo(a.segundo)}`"></span>
+      <!-- Comentarios sobre un momento del clip: un punto en su segundo -->
+      <span v-for="m in marcasComentario" :key="m.id" class="marca-comentario" :style="{ left: porcentaje(m.segundo) + '%' }"
+            :title="`${m.autor || 'Comentario'} en ${formatearTiempo(m.segundo)}: ${m.texto}`"></span>
+    </div>
+    <div v-if="marcasComentario.length || anotaciones.length" class="leyenda-marcas mt-1">
+      <span v-if="anotaciones.length"><span class="muestra-marca dibujo"></span> Dibujos</span>
+      <span v-if="marcasComentario.length"><span class="muestra-marca comentario"></span> Comentarios</span>
     </div>
 
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2">
@@ -123,9 +130,15 @@ const props = defineProps({
   angulos: { type: Array, default: () => [] },
   anotaciones: { type: Array, default: () => [] },
   puedeAnotar: { type: Boolean, default: false },
-  guardando: { type: Boolean, default: false }
+  guardando: { type: Boolean, default: false },
+  // Comentarios del clip: los que tienen momento (segundo) se marcan en la barra
+  comentarios: { type: Array, default: () => [] }
 })
-const emit = defineEmits(['guardar-anotaciones'])
+// posicion: segundo actual dentro del clip (para comentar sobre ese momento)
+const emit = defineEmits(['guardar-anotaciones', 'posicion'])
+
+const marcasComentario = computed(() =>
+  props.comentarios.filter(c => c.segundo !== null && c.segundo !== undefined))
 
 const VELOCIDADES = [0.25, 0.5, 1]
 // Cuadro a cuadro: se detectan los cuadros por segundo del video al reproducirlo (30 hasta saberlo)
@@ -339,6 +352,19 @@ watch(() => [props.url, props.urlHls, props.inicio], () => {
   cargarFuente()
 }, { immediate: true })
 
+// Se avisa la posición dentro del clip (para comentar sobre ese momento)
+watch(posicion, (p) => emit('posicion', p), { immediate: true })
+
+// Desde afuera (un comentario con momento): pausa y lleva el video a ese segundo del clip
+const irA = (segundo) => {
+  if (!videoRef.value) return
+  videoRef.value.pause()
+  anotacionVisible.value = null
+  moverA(segundo)
+  ultimaPosicion = segundo
+}
+defineExpose({ irA })
+
 onBeforeUnmount(() => {
   videoRef.value?.pause()
   soltarHls()
@@ -387,6 +413,20 @@ onBeforeUnmount(() => {
   border-radius: 2px;
   background: #ca8a04;
 }
+.marca-comentario {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #0891b2;
+  border: 2px solid var(--o-tarjeta, #fff);
+}
+.leyenda-marcas { display: flex; gap: 12px; font-size: 0.7rem; font-weight: 600; color: var(--o-texto-suave, #64748b); }
+.muestra-marca { display: inline-block; width: 8px; height: 8px; margin-right: 3px; border-radius: 2px; }
+.muestra-marca.dibujo { background: #ca8a04; }
+.muestra-marca.comentario { background: #0891b2; border-radius: 50%; }
 .tiempo { font-variant-numeric: tabular-nums; font-size: 0.85rem; font-weight: 700; color: var(--o-texto, #0f172a); padding: 0 6px; }
 .selector-calidad { width: auto; }
 .herramientas, .aviso-dibujo {

@@ -113,7 +113,7 @@
                max-width="820px" :hay-cambios="hayCambios" @close="editando = null">
       <template v-if="editando">
         <form id="form-clip-admin" novalidate @submit.prevent="guardar">
-          <ReproductorClip v-bind="tramoDe(editando)" :anotaciones="editando.anotaciones || []" puede-anotar
+          <ReproductorClip ref="reproductor" v-bind="tramoDe(editando)" :comentarios="comentariosClip" @posicion="p => posicionClip = p" :anotaciones="editando.anotaciones || []" puede-anotar
                            :guardando="guardandoDibujo" @guardar-anotaciones="guardarDibujos" />
 
           <div class="d-flex flex-wrap gap-2 align-items-center small text-muted mt-3">
@@ -159,7 +159,8 @@
           </div>
         </form>
 
-        <ComentariosClip :id-clip="editando.id" moderar />
+        <ComentariosClip :id-clip="editando.id" moderar :posicion-actual="posicionClip"
+                         @ir-a="s => reproductor?.irA(s)" @cambiaron="l => comentariosClip = l" />
       </template>
 
       <template #footer>
@@ -320,6 +321,16 @@ const hayCambios = computed(() => !!editando.value && (
 ))
 
 // Dibujos sobre el video: el coordinador general los guarda en cualquier clip
+// Reproductor y comentarios del clip abierto: posición actual y comentarios con momento
+const reproductor = ref(null)
+const posicionClip = ref(null)
+const comentariosClip = ref([])
+watch(editando, (nuevo, anterior) => {
+  if (nuevo?.id === anterior?.id) return
+  posicionClip.value = null
+  comentariosClip.value = []
+})
+
 const guardandoDibujo = ref(false)
 const guardarDibujos = async (anotaciones) => {
   const clip = editando.value

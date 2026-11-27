@@ -389,6 +389,17 @@ export function useAaabTv() {
     return tag
   }
 
+  // Valores exactos para un tag (lo usa la línea de tiempo al arrastrar): el momento marcado
+  // y/o cuántos segundos antes y después dura el clip, siempre dentro de los límites permitidos
+  const fijarTag = (id, { segundo, antes, despues }) => {
+    const tag = sesion.tags.find(t => t.id === id)
+    if (!tag || tag.segundo === null) return
+    const acotar = (v) => Math.min(AJUSTE_MAXIMO, Math.max(AJUSTE_MINIMO, Math.round(v)))
+    if (segundo !== undefined) tag.segundo = Math.max(0, Math.round(segundo))
+    if (antes !== undefined) tag.antes = acotar(antes)
+    if (despues !== undefined) tag.despues = acotar(despues)
+  }
+
   // Ajuste del inicio o del fin de un clip: cuántos segundos antes y después del momento marcado
   const ajustarTag = (id, campo, delta) => {
     const tag = sesion.tags.find(t => t.id === id)
@@ -689,7 +700,8 @@ export function useAaabTv() {
   // ─── Comentarios de un clip ───────────────────────────────
   // El coordinador general comenta desde la moderación; los demás desde el portal
   const listarComentarios = (idClip) => repoClips.listarComentarios(idClip)
-  const agregarComentario = (idClip, texto) => repoClips.agregarComentario(idClip, texto.trim())
+  // segundo: momento del clip al que se refiere el comentario (null = el clip en general)
+  const agregarComentario = (idClip, texto, segundo = null) => repoClips.agregarComentario(idClip, texto.trim(), segundo)
   const borrarComentario = (id) => repoClips.borrarComentario(id)
 
   // ─── Listas de reproducción (de cada usuario) ─────────────
@@ -717,7 +729,7 @@ export function useAaabTv() {
     segundosReloj, tagsOrdenados, tagsSinSincronizar,
     cargarPanel, agregarBoton, editarBoton, borrarBoton, restablecerBotones, estadoPanel, guardarPanelAhora,
     cargarVideo, archivoDelVideo, agregarCamara, cargarArchivoCamara, archivoCamara, quitarCamara, sincronizarCamara,
-    marcarTag, borrarTag, moverTag, ajustarTag,
+    marcarTag, borrarTag, moverTag, ajustarTag, fijarTag,
     iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion,
     eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento,
     gruposPublicacion, cargarGruposPublicacion, publicarClips, publicarVideoExterno, progresoSubida, borrarClipPublicado,
