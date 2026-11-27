@@ -1,7 +1,7 @@
 <template>
   <section class="linea-pistas mt-3" aria-label="Línea de tiempo por situación">
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-      <h3 class="titulo m-0"><i class="bi bi-distribute-horizontal" aria-hidden="true"></i> Línea de tiempo</h3>
+      <h6 class="fw-bold m-0 text-dark text-uppercase small d-flex align-items-center gap-2"><i class="bi bi-distribute-horizontal text-danger" aria-hidden="true"></i> Línea de tiempo</h6>
       <div class="btn-group btn-group-sm" role="group" aria-label="Zoom">
         <button type="button" class="btn btn-light border" :disabled="zoom <= ZOOM_MINIMO" aria-label="Alejar" @click="cambiarZoom(-1)">
           <i class="bi bi-zoom-out" aria-hidden="true"></i>
@@ -200,7 +200,6 @@ onBeforeUnmount(alSoltar)
 
 <style scoped>
 .linea-pistas { user-select: none; }
-.titulo { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); }
 .valor-zoom { min-width: 46px; font-variant-numeric: tabular-nums; opacity: 1; }
 .cuerpo { display: flex; border: 1px solid var(--o-borde, #e2e8f0); border-radius: 12px; overflow: hidden; }
 .nombres { flex: 0 0 7.5rem; border-right: 1px solid var(--o-borde, #e2e8f0); background: var(--o-tarjeta, #fff); }

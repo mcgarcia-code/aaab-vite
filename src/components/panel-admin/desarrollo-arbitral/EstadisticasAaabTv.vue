@@ -1,44 +1,40 @@
 <template>
   <div>
     <!-- Período (un solo filtro, arriba de todo) -->
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3" role="group" aria-label="Período">
-      <button v-for="p in PERIODOS" :key="p.clave" type="button" class="filtro" :class="{ activo: periodo === p.clave }"
-              :aria-pressed="periodo === p.clave" @click="periodo = p.clave">{{ p.etiqueta }}</button>
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <PestanasSeccion v-model="periodo" :pestanas="PERIODOS" aria-label="Período" />
       <span class="small text-muted ms-auto">{{ clipsDelPeriodo.length }} clips en el período</span>
-      <button type="button" class="btn btn-sm btn-success fw-bold" :disabled="!clipsDelPeriodo.length || exportando" @click="exportarExcel">
-        <span v-if="exportando" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-        <i v-else class="bi bi-file-earmark-excel" aria-hidden="true"></i> Exportar a Excel
-      </button>
+      <BotonHerramienta tipo="excel" :cargando="exportando" :disabled="!clipsDelPeriodo.length" @click="exportarExcel" />
     </div>
 
     <EstadoVacio v-if="!clipsDelPeriodo.length" icono="bi-bar-chart" titulo="No hay clips en este período" mensaje="Probá con un período más largo." />
 
     <template v-else>
       <!-- Totales -->
-      <div class="tarjetas mb-4">
-        <div class="tarjeta-dato">
-          <span class="valor">{{ clipsDelPeriodo.length }}</span>
-          <span class="etiqueta">Clips publicados</span>
-        </div>
-        <div class="tarjeta-dato">
-          <span class="valor">{{ cantidadPendientes }}</span>
-          <span class="etiqueta">Pendientes de autorizar</span>
-        </div>
-        <div class="tarjeta-dato">
-          <span class="valor">{{ cantidadAutorizados }}</span>
-          <span class="etiqueta">Autorizados en algún canal</span>
-        </div>
-        <div class="tarjeta-dato">
-          <span class="valor">{{ porcentajeCorrectas === null ? '—' : `${porcentajeCorrectas}%` }}</span>
-          <span class="etiqueta">Decisiones correctas
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="card card-body shadow-sm border-light-subtle rounded-3 p-3 h-100 d-flex flex-column gap-1">
+          <span class="fs-3 fw-bold text-dark lh-1">{{ clipsDelPeriodo.length }}</span>
+          <span class="small text-muted fw-semibold">Clips publicados</span>
+        </div></div>
+        <div class="col-6 col-lg-3"><div class="card card-body shadow-sm border-light-subtle rounded-3 p-3 h-100 d-flex flex-column gap-1">
+          <span class="fs-3 fw-bold text-dark lh-1">{{ cantidadPendientes }}</span>
+          <span class="small text-muted fw-semibold">Pendientes de autorizar</span>
+        </div></div>
+        <div class="col-6 col-lg-3"><div class="card card-body shadow-sm border-light-subtle rounded-3 p-3 h-100 d-flex flex-column gap-1">
+          <span class="fs-3 fw-bold text-dark lh-1">{{ cantidadAutorizados }}</span>
+          <span class="small text-muted fw-semibold">Autorizados en algún canal</span>
+        </div></div>
+        <div class="col-6 col-lg-3"><div class="card card-body shadow-sm border-light-subtle rounded-3 p-3 h-100 d-flex flex-column gap-1">
+          <span class="fs-3 fw-bold text-dark lh-1">{{ porcentajeCorrectas === null ? '—' : `${porcentajeCorrectas}%` }}</span>
+          <span class="small text-muted fw-semibold">Decisiones correctas
             <template v-if="valorados.length">({{ valorados.length }} {{ valorados.length === 1 ? 'valorado' : 'valorados' }})</template>
           </span>
-        </div>
+        </div></div>
       </div>
 
       <div class="row g-4">
         <section class="col-12 col-lg-6">
-          <h3 class="titulo-grafico">Clips por situación</h3>
+          <h6 class="fw-bold text-dark text-uppercase small mb-3 pb-2 border-bottom border-2 border-danger">Clips por situación</h6>
           <div class="barras">
             <div v-for="f in porSituacion" :key="f.nombre" class="fila-barra" :title="`${f.nombre}: ${f.cantidad}`">
               <span class="nombre text-truncate">{{ f.nombre }}</span>
@@ -49,7 +45,7 @@
         </section>
 
         <section class="col-12 col-lg-6">
-          <h3 class="titulo-grafico">Autorizados por canal</h3>
+          <h6 class="fw-bold text-dark text-uppercase small mb-3 pb-2 border-bottom border-2 border-danger">Autorizados por canal</h6>
           <p v-if="!porCanal.length" class="small text-muted">Todavía no hay clips autorizados en el período.</p>
           <div v-else class="barras">
             <div v-for="f in porCanal" :key="f.nombre" class="fila-barra" :title="`${f.nombre}: ${f.cantidad}`">
@@ -61,7 +57,7 @@
         </section>
 
         <section class="col-12">
-          <h3 class="titulo-grafico">Clips publicados por mes</h3>
+          <h6 class="fw-bold text-dark text-uppercase small mb-3 pb-2 border-bottom border-2 border-danger">Clips publicados por mes</h6>
           <div class="columnas" role="img" :aria-label="`Clips por mes: ${porMes.map(m => `${m.nombre} ${m.cantidad}`).join(', ')}`">
             <div v-for="m in porMes" :key="m.clave" class="columna" :title="`${m.nombre}: ${m.cantidad}`">
               <span class="numero-columna">{{ m.cantidad || '' }}</span>
@@ -72,7 +68,7 @@
         </section>
 
         <section class="col-12 col-lg-7">
-          <h3 class="titulo-grafico">Decisiones por árbitro</h3>
+          <h6 class="fw-bold text-dark text-uppercase small mb-3 pb-2 border-bottom border-2 border-danger">Decisiones por árbitro</h6>
           <!-- Leyenda: el color siempre va con su nombre -->
           <div class="leyenda mb-2">
             <span v-for="(d, clave) in DECISIONES" :key="clave" class="item-leyenda">
@@ -99,7 +95,7 @@
 
         <!-- Datos de la jugada (si se cargaron al publicar o al revisar) -->
         <section class="col-12 col-lg-6">
-          <h3 class="titulo-grafico">Clips por zona de la cancha</h3>
+          <h6 class="fw-bold text-dark text-uppercase small mb-3 pb-2 border-bottom border-2 border-danger">Clips por zona de la cancha</h6>
           <p v-if="!porZona.length" class="small text-muted">Todavía no hay clips con la zona cargada.</p>
           <div v-else class="barras">
             <div v-for="f in porZona" :key="f.nombre" class="fila-barra" :title="`${f.nombre}: ${f.cantidad}`">
@@ -111,13 +107,13 @@
         </section>
 
         <section class="col-12 col-lg-6">
-          <h3 class="titulo-grafico">Sanción aplicada y la que correspondía</h3>
+          <h6 class="fw-bold text-dark text-uppercase small mb-3 pb-2 border-bottom border-2 border-danger">Sanción aplicada y la que correspondía</h6>
           <p v-if="!sancionesDistintas.length" class="small text-muted">
             No hay clips donde la sanción aplicada difiera de la que correspondía.
           </p>
           <div v-else class="table-responsive">
-            <table class="table table-sm align-middle mb-0 tabla-sanciones">
-              <thead>
+            <table class="table table-sm table-hover align-middle mb-0 small">
+              <thead class="table-light">
                 <tr><th scope="col">Aplicada</th><th scope="col">Correspondía</th><th scope="col" class="text-end">Clips</th></tr>
               </thead>
               <tbody>
@@ -130,7 +126,7 @@
         </section>
 
         <section class="col-12 col-lg-6">
-          <h3 class="titulo-grafico">Clips más vistos</h3>
+          <h6 class="fw-bold text-dark text-uppercase small mb-3 pb-2 border-bottom border-2 border-danger">Clips más vistos</h6>
           <p v-if="!masVistos.length" class="small text-muted">Todavía no hay vistas registradas en el período.</p>
           <div v-else class="barras">
             <div v-for="c in masVistos" :key="c.id" class="fila-barra" :title="`${c.titulo}: ${c.cantidadVistas} ${c.cantidadVistas === 1 ? 'vista' : 'vistas'}`">
@@ -142,7 +138,7 @@
         </section>
 
         <section class="col-12 col-lg-5">
-          <h3 class="titulo-grafico">Quién publica</h3>
+          <h6 class="fw-bold text-dark text-uppercase small mb-3 pb-2 border-bottom border-2 border-danger">Quién publica</h6>
           <div class="barras">
             <div v-for="f in porAutor" :key="f.nombre" class="fila-barra" :title="`${f.nombre}: ${f.cantidad}`">
               <span class="nombre text-truncate">{{ f.nombre }}</span>
@@ -159,6 +155,8 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import {
   DECISIONES, ESTADOS_DESTINO, ZONAS_CANCHA, EQUIPOS, SANCIONES, estadoGeneral, formatearTiempo
 } from '@/composables/useAaabTv'
@@ -386,35 +384,8 @@ const exportarExcel = async () => {
 </script>
 
 <style scoped>
-.filtro {
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 50rem;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  background: var(--o-tarjeta, #fff);
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--o-texto-medio, #475569);
-}
-.filtro.activo { background: #0f172a; border-color: var(--o-texto, #0f172a); color: #fff; }
 
-.tarjetas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-}
-.tarjeta-dato {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 12px 14px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 12px;
-}
-.tarjeta-dato .valor { font-size: 1.6rem; font-weight: 800; color: var(--o-texto, #0f172a); font-variant-numeric: tabular-nums; line-height: 1.1; }
-.tarjeta-dato .etiqueta { font-size: 0.75rem; color: var(--o-texto-suave, #64748b); font-weight: 600; }
 
-.titulo-grafico { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); margin-bottom: 10px; }
 
 .barras { display: flex; flex-direction: column; gap: 6px; }
 .fila-barra { display: grid; grid-template-columns: minmax(0, 9rem) 1fr 2.5rem; align-items: center; gap: 10px; font-size: 0.8rem; }
@@ -442,8 +413,6 @@ const exportarExcel = async () => {
 .mes { font-size: 0.7rem; color: var(--o-texto-suave, #64748b); }
 
 .leyenda { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.75rem; font-weight: 600; color: var(--o-texto-medio, #475569); }
-.tabla-sanciones { font-size: 0.8rem; }
-.tabla-sanciones th { font-size: 0.75rem; color: var(--o-texto-suave, #64748b); font-weight: 700; }
 .item-leyenda { display: inline-flex; align-items: center; gap: 4px; }
 .muestra { width: 10px; height: 10px; border-radius: 2px; }
 </style>

@@ -5,22 +5,22 @@
       en "Analizar" podés ajustar el inicio y el fin de cada clip.
     </p>
 
-    <section class="lista-botones mb-3">
-      <header class="lista-encabezado">
-        <h3 class="m-0">Mis botones</h3>
-        <span class="badge bg-light text-dark border">{{ botones.length }}</span>
+    <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
+      <header class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
+        <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i class="bi bi-ui-checks-grid text-danger fs-5" aria-hidden="true"></i> Mis botones</h6>
+        <span class="badge rounded-pill bg-dark">{{ botones.length }}</span>
         <span v-if="estadoPanel === 'guardando'" class="small text-muted ms-auto">
           <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Guardando...
         </span>
       </header>
-      <div v-if="estadoPanel === 'error'" class="alert alert-danger small py-2 m-2 d-flex flex-wrap align-items-center gap-2" role="alert">
+      <div v-if="estadoPanel === 'error'" class="alert alert-danger small py-2 mb-3 d-flex flex-wrap align-items-center gap-2" role="alert">
         <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> No se pudieron guardar los cambios del panel.
         <button type="button" class="btn btn-sm btn-danger fw-bold ms-auto" @click="guardarPanelAhora">Reintentar</button>
       </div>
 
       <!-- Una sola lista: en celular una columna, desde tablet dos -->
-      <ul v-if="botones.length" class="list-unstyled m-0 p-2 grilla-filas">
-        <li v-for="b in botones" :key="b.id" class="boton-fila" :style="{ borderLeftColor: colorTag(b.color).solido }">
+      <ul v-if="botones.length" class="list-unstyled m-0 grilla-filas">
+        <li v-for="b in botones" :key="b.id" class="card shadow-sm border-light-subtle rounded-3 py-2 px-3 d-flex flex-row align-items-center gap-2 small boton-fila" :style="{ borderLeftColor: colorTag(b.color).solido }">
           <span class="flex-grow-1 min-w-0 text-truncate fw-semibold">{{ b.nombre }}</span>
           <button type="button" class="btn btn-sm btn-light border" :aria-label="`Editar ${b.nombre}`" title="Editar" @click="empezarEdicion(b)">
             <i class="bi bi-pencil" aria-hidden="true"></i>
@@ -30,12 +30,14 @@
           </button>
         </li>
       </ul>
-      <p v-else class="text-muted small m-0 p-3">Todavía no hay botones. Agregalos abajo o tocá "Restablecer botones".</p>
+      <p v-else class="text-muted small m-0">Todavía no hay botones. Agregalos abajo o tocá "Restablecer botones".</p>
     </section>
 
     <!-- ============ ALTA / EDICIÓN ============ -->
-    <form class="formulario-boton" novalidate @submit.prevent="guardarBoton">
-      <h3 class="formulario-titulo">{{ editandoId ? 'Editar botón' : 'Nuevo botón' }}</h3>
+    <form class="card card-body shadow-sm border-light-subtle rounded-3 p-3" novalidate @submit.prevent="guardarBoton">
+      <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-danger">
+        <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i :class="['bi', editandoId ? 'bi-pencil' : 'bi-plus-circle', 'text-danger', 'fs-5']" aria-hidden="true"></i> {{ editandoId ? 'Editar botón' : 'Nuevo botón' }}</h6>
+      </div>
       <div class="row g-2 align-items-end">
         <div class="col-12 col-md-6">
           <label for="tv-boton-nombre" class="form-label small fw-bold">Situación</label>
@@ -104,46 +106,13 @@ const guardarBoton = () => {
 </script>
 
 <style scoped>
-.lista-botones {
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 16px;
-  background: var(--o-tarjeta, #fff);
-  overflow: hidden;
-}
-.lista-encabezado {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: var(--o-superficie, #f8fafc);
-  border-bottom: 1px solid var(--o-borde, #e2e8f0);
-}
-.lista-encabezado h3 { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); }
-
 /* Celular: una columna. Desde tablet: dos columnas */
 .grilla-filas { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
 @media (min-width: 768px) {
   .grilla-filas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-.boton-fila {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-left: 4px solid;
-  border-radius: 12px;
-  font-size: 0.85rem;
-}
-
-.formulario-boton {
-  border: 1px dashed var(--o-borde, #cbd5e1);
-  border-radius: 16px;
-  padding: 14px;
-  background: var(--o-superficie, #f8fafc);
-}
-.formulario-titulo { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); margin-bottom: 10px; }
+.boton-fila { border-left: 4px solid !important; }
 
 .muestra-color {
   width: 28px;

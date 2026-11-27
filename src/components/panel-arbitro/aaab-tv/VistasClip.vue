@@ -5,14 +5,14 @@
       Visto por {{ cantidadMostrada }} {{ cantidadMostrada === 1 ? 'persona' : 'personas' }}
       <i :class="['bi', abierto ? 'bi-chevron-up' : 'bi-chevron-down']" aria-hidden="true"></i>
     </button>
-    <div v-if="abierto" class="lista-vistas mt-2">
+    <div v-if="abierto" class="card card-body shadow-sm border-light-subtle rounded-3 p-2 mt-2">
       <div v-if="cargando" class="small text-muted">
         <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Cargando...
       </div>
       <p v-else-if="error" class="small text-danger m-0" role="alert">{{ error }}</p>
       <p v-else-if="!vistas.length" class="small text-muted m-0">Todavía nadie lo vio.</p>
-      <ul v-else class="list-unstyled m-0">
-        <li v-for="v in vistas" :key="`${v.tipoUsuario}-${v.idUsuario}`" class="d-flex justify-content-between gap-2 small">
+      <ul v-else class="list-unstyled m-0 d-flex flex-column gap-1">
+        <li v-for="v in vistas" :key="`${v.tipoUsuario}-${v.idUsuario}`" class="d-flex justify-content-between gap-2 small border-bottom pb-1">
           <span class="text-truncate">{{ v.nombre || 'Usuario' }}</span>
           <span class="text-muted flex-shrink-0">{{ fechaHora(v.vistoEl) }}</span>
         </li>
@@ -75,13 +75,3 @@ watch(() => props.idClip, () => {
 })
 </script>
 
-<style scoped>
-.lista-vistas {
-  max-height: 180px;
-  overflow-y: auto;
-  padding: 8px 10px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 10px;
-}
-.lista-vistas li + li { margin-top: 4px; }
-</style>

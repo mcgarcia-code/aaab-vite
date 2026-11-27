@@ -6,7 +6,7 @@
             </p>
             <div class="d-flex flex-column flex-md-row gap-2 mb-3">
               <!-- Qué se mira: un canal, lo propio, una colección oficial o una de mis listas -->
-              <select v-model="vistaActiva" class="form-select selector-vista" aria-label="Qué ver">
+              <select v-model="vistaActiva" class="form-select shadow-sm border-secondary-subtle fw-semibold control-barra selector-vista" aria-label="Qué ver">
                 <optgroup label="Canales">
                   <option v-for="c in canalesConPublico" :key="claveCanal(c.idGrupo)" :value="claveCanal(c.idGrupo)">{{ c.nombre }}</option>
                 </optgroup>
@@ -24,15 +24,15 @@
                   <option v-for="l in listasReproduccion" :key="l.id" :value="`l-${l.id}`">{{ l.nombre }} ({{ l.idsClips.length }})</option>
                 </optgroup>
               </select>
-              <div class="input-group buscador">
-                <span class="input-group-text bg-white"><i class="bi bi-search" aria-hidden="true"></i></span>
-                <input v-model="busqueda" type="search" class="form-control border-start-0" aria-label="Buscar clips" placeholder="Buscar por título, descripción o partido">
+              <div class="input-group shadow-sm buscador">
+                <span class="input-group-text bg-white control-barra"><i class="bi bi-search" aria-hidden="true"></i></span>
+                <input v-model="busqueda" type="search" class="form-control border-start-0 control-barra" aria-label="Buscar clips" placeholder="Buscar por título, descripción o partido">
               </div>
               <BotonHerramienta tipo="nuevo" :texto="puedePublicar ? 'Analizar y publicar' : 'Analizar un partido'" icono="bi-camera-reels" :solo-icono-en-celular="false" @click="emit('ir-estudio')" />
             </div>
 
             <!-- ============ VISTA PARTIDO: todos los clips del partido sobre su línea de tiempo ============ -->
-            <section v-if="partidoActivo && clipsFiltrados.length" class="linea-partido mb-3" aria-label="Clips del partido en el tiempo">
+            <section v-if="partidoActivo && clipsFiltrados.length" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3 linea-partido" aria-label="Clips del partido en el tiempo">
               <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small text-muted">
                 <i class="bi bi-trophy" aria-hidden="true"></i>
                 <strong class="text-body">{{ partidoActivo.nombre }}</strong> · {{ fechaArg(partidoActivo.fecha) }}
@@ -71,11 +71,7 @@
               </template>
             </div>
 
-            <div v-if="etiquetas.length > 1" class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Filtrar por situación">
-              <button type="button" class="filtro" :class="{ activo: !etiquetaActiva }" :aria-pressed="!etiquetaActiva" @click="etiquetaActiva = ''">Todas</button>
-              <button v-for="e in etiquetas" :key="e" type="button" class="filtro" :class="{ activo: etiquetaActiva === e }"
-                      :aria-pressed="etiquetaActiva === e" @click="etiquetaActiva = etiquetaActiva === e ? '' : e">{{ e }}</button>
-            </div>
+            <PestanasSeccion v-if="etiquetas.length > 1" v-model="etiquetaActiva" :pestanas="pestanasEtiquetas" class="mb-3" aria-label="Filtrar por situación" />
 
             <EstadoCargando v-if="cargando && !clipsBase.length" texto="Cargando clips" />
 
@@ -85,28 +81,30 @@
             <EstadoVacio v-else-if="!clipsFiltrados.length" icono="bi-play-btn" titulo="No hay clips"
                          :mensaje="mensajeVacio" />
 
-            <div v-else class="grilla">
-              <button v-for="c in paginados" :key="c.id" type="button" class="tarjeta-clip" @click="clipAbierto = c">
+            <div v-else class="row g-3">
+              <div v-for="c in paginados" :key="c.id" class="col-12 col-sm-6 col-lg-4 col-xxl-3">
+              <button type="button" class="card shadow-sm border-light-subtle rounded-3 overflow-hidden h-100 w-100 p-0 text-start tarjeta-clip" @click="clipAbierto = c">
                 <div class="miniatura">
                   <img v-if="c.urlMiniatura" :src="c.urlMiniatura" alt="" loading="lazy" class="imagen-miniatura">
-                  <span class="badge-tag" :style="{ background: colorTag(c.color).solido }">{{ c.etiqueta }}</span>
+                  <span class="estado-pill text-white etiqueta-miniatura" :style="{ background: colorTag(c.color).solido }">{{ c.etiqueta }}</span>
                   <span class="icono-play" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
                   <span v-if="estadoEnVista(c) && estadoEnVista(c) !== 'autorizado'" class="estado-pill estado-miniatura"
                         :class="ESTADOS_DESTINO[estadoEnVista(c)].clase">
                     <i :class="['bi', ESTADOS_DESTINO[estadoEnVista(c)].icono]" aria-hidden="true"></i> {{ ESTADOS_DESTINO[estadoEnVista(c)].etiqueta }}
                   </span>
-                  <span v-if="c.vistoPorMi" class="visto"><i class="bi bi-check2" aria-hidden="true"></i> Visto</span>
+                  <span v-if="c.vistoPorMi" class="estado-pill estado-verde visto"><i class="bi bi-check2" aria-hidden="true"></i> Visto</span>
                   <span class="duracion">{{ formatearTiempo(c.fin - c.inicio) }}</span>
                 </div>
                 <div class="p-3 text-start">
-                  <h3 class="titulo-clip">{{ c.titulo }}</h3>
-                  <p class="descripcion-clip">{{ c.descripcion || 'Sin descripción' }}</p>
-                  <div class="pie-tarjeta">
+                  <h6 class="fw-bold text-dark mb-1 lh-12">{{ c.titulo }}</h6>
+                  <p class="small text-muted mb-2 descripcion-clip">{{ c.descripcion || 'Sin descripción' }}</p>
+                  <div class="d-flex justify-content-between gap-2 pt-2 border-top texto-075 text-secondary fw-semibold">
                     <span class="text-truncate">{{ c.partido || (c.origen === 'externo' ? 'Video externo' : '') }}</span>
                     <span class="flex-shrink-0">{{ fechaArg(c.fecha) }}</span>
                   </div>
                 </div>
               </button>
+              </div>
             </div>
             <BarraPaginacion v-if="totalPaginas > 1" v-model="paginaActual" :total="totalPaginas" class="mt-3" />
 
@@ -118,7 +116,7 @@
                          :puede-anotar="modoAdmin || esPropio(clipAbierto)" :guardando="guardandoDibujo"
                          @posicion="p => posicionClip = p" @guardar-anotaciones="guardarDibujos" @visto="registrarVista(clipAbierto.id)" />
         <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
-          <span class="badge-tag" :style="{ background: colorTag(clipAbierto.color).solido }">{{ clipAbierto.etiqueta }}</span>
+          <span class="estado-pill text-white" :style="{ background: colorTag(clipAbierto.color).solido }">{{ clipAbierto.etiqueta }}</span>
           <span v-if="DECISIONES[clipAbierto.decision]" class="estado-pill" :class="DECISIONES[clipAbierto.decision].clase">
             <i :class="['bi', DECISIONES[clipAbierto.decision].icono]" aria-hidden="true"></i> Decisión {{ DECISIONES[clipAbierto.decision].etiqueta.toLowerCase() }}
           </span>
@@ -131,7 +129,7 @@
         <!-- Canales donde se ve (el autor ve también los pendientes y los no autorizados) -->
         <div class="d-flex flex-wrap gap-1 align-items-center mt-2">
           <span class="small fw-bold text-muted me-1">Canales:</span>
-          <span v-for="d in destinosVisibles(clipAbierto)" :key="claveCanal(d.idGrupo)" class="chip-canal">
+          <span v-for="d in destinosVisibles(clipAbierto)" :key="claveCanal(d.idGrupo)" class="estado-pill estado-gris">
             <i :class="['bi', d.idGrupo === null ? 'bi-globe2' : 'bi-people-fill']" aria-hidden="true"></i> {{ d.nombre }}
             <span v-if="d.estado !== 'autorizado'" class="estado-pill ms-1" :class="ESTADOS_DESTINO[d.estado].clase">
               {{ ESTADOS_DESTINO[d.estado].etiqueta }}
@@ -168,7 +166,7 @@
           <button type="button" class="btn btn-sm btn-light border fw-bold" :aria-expanded="mostrarListas" @click="mostrarListas = !mostrarListas">
             <i class="bi bi-collection-play" aria-hidden="true"></i> Guardar en lista
           </button>
-          <div v-if="mostrarListas" class="panel-listas mt-2">
+          <div v-if="mostrarListas" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mt-2 panel-listas">
             <p v-if="!listasReproduccion.length" class="small text-muted mb-2">Todavía no tenés listas: creá la primera.</p>
             <div v-for="l in listasReproduccion" :key="l.id" class="form-check">
               <input :id="`lista-${l.id}`" type="checkbox" class="form-check-input" :checked="estaEnLista(l, clipAbierto)"
@@ -205,6 +203,7 @@ import { useRoute, useRouter } from 'vue-router'
 import ModalBase from '@/components/ModalBase.vue'
 import VistasClip from '@/components/panel-arbitro/aaab-tv/VistasClip.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'
@@ -388,6 +387,8 @@ const clipsDeVista = computed(() => {
 })
 
 const etiquetas = computed(() => [...new Set(clipsDeVista.value.map(c => c.etiqueta))])
+// Filtro por situación: "Todas" más una pestaña por etiqueta
+const pestanasEtiquetas = computed(() => [{ clave: '', etiqueta: 'Todas' }, ...etiquetas.value.map(e => ({ clave: e, etiqueta: e }))])
 
 const clipsFiltrados = computed(() => {
   const q = normalizarTexto(busqueda.value)
@@ -531,50 +532,8 @@ const confirmarBorrado = () => {
 @media (min-width: 768px) {
   .selector-vista { max-width: 240px; }
 }
-.chip-canal {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 10px;
-  border-radius: 50rem;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--o-texto-medio, #475569);
-}
-.panel-listas {
-  padding: 10px 12px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 12px;
-  max-width: 420px;
-}
-.filtro {
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 50rem;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  background: var(--o-tarjeta, #fff);
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--o-texto-medio, #475569);
-}
-.filtro.activo { background: #0f172a; border-color: var(--o-texto, #0f172a); color: #fff; }
-
-.grilla {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-}
-.tarjeta-clip {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 16px;
-  background: var(--o-tarjeta, #fff);
-  overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
+.panel-listas { max-width: 420px; }
+.tarjeta-clip { transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .tarjeta-clip:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12); }
 .tarjeta-clip:focus-visible { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 2px; }
 
@@ -584,23 +543,8 @@ const confirmarBorrado = () => {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #7f1d1d 140%);
 }
 .imagen-miniatura { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.visto {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: rgba(22, 163, 74, 0.9);
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
+.visto { position: absolute; left: 10px; bottom: 10px; }
 /* Vista Partido: los clips como puntos sobre el tiempo del partido */
-.linea-partido {
-  padding: 10px 12px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 12px;
-}
 .pista-partido {
   position: relative;
   height: 44px;
@@ -656,35 +600,13 @@ const confirmarBorrado = () => {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-.badge-tag {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 8px;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-.miniatura .badge-tag { position: absolute; top: 10px; left: 10px; }
+.etiqueta-miniatura { position: absolute; top: 10px; left: 10px; }
 .estado-miniatura { position: absolute; top: 10px; right: 10px; }
 
-.titulo-clip { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); margin-bottom: 4px; line-height: 1.3; }
 .descripcion-clip {
-  font-size: 0.8rem;
-  color: var(--o-texto-suave, #64748b);
-  margin-bottom: 10px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-.pie-tarjeta {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--o-borde, #f1f5f9);
-  font-size: 0.75rem;
-  color: var(--o-texto-medio, #475569);
-  font-weight: 600;
 }
 </style>

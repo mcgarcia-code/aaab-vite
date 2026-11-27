@@ -1,9 +1,11 @@
 <template>
-  <section class="comentarios" aria-labelledby="titulo-comentarios">
-    <h3 id="titulo-comentarios" class="titulo">
-      <i class="bi bi-chat-left-text" aria-hidden="true"></i> Comentarios
-      <span v-if="comentarios.length" class="badge rounded-pill cantidad">{{ comentarios.length }}</span>
-    </h3>
+  <section class="border-top pt-3 mt-3" aria-labelledby="titulo-comentarios">
+    <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
+      <h6 id="titulo-comentarios" class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2">
+        <i class="bi bi-chat-left-text text-danger fs-5" aria-hidden="true"></i> Comentarios
+      </h6>
+      <span v-if="comentarios.length" class="badge rounded-pill bg-dark">{{ comentarios.length }}</span>
+    </div>
 
     <div v-if="cargando" class="small text-muted py-2">
       <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Cargando comentarios...
@@ -11,43 +13,43 @@
     <p v-else-if="error" class="small text-danger mb-2" role="alert">{{ error }}</p>
     <p v-else-if="!comentarios.length" class="small text-muted mb-2">Todavía no hay comentarios.</p>
 
-    <ul v-else class="list-unstyled m-0 lista">
+    <ul v-else class="list-unstyled m-0 d-flex flex-column gap-2">
       <!-- Cada comentario con sus respuestas debajo (un solo nivel) -->
-      <li v-for="c in principales" :key="c.id" class="hilo">
-        <div class="comentario" :class="{ coordinacion: c.esCoordinacion }">
+      <li v-for="c in principales" :key="c.id" class="d-flex flex-column gap-2">
+        <div class="card card-body shadow-sm border-light-subtle rounded-3 py-2 px-3" :class="{ 'border-start border-danger border-4': c.esCoordinacion }">
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <strong class="autor">{{ c.autor || 'Usuario' }}</strong>
-            <span v-if="c.esCoordinacion" class="badge-coordinacion">Coordinación</span>
+            <strong class="small text-dark">{{ c.autor || 'Usuario' }}</strong>
+            <span v-if="c.esCoordinacion" class="estado-pill estado-rojo">Coordinación</span>
             <!-- Comentario sobre un momento del clip: lleva el video ahí -->
-            <button v-if="tieneMomento(c)" type="button" class="btn btn-sm momento-comentario"
+            <button v-if="tieneMomento(c)" type="button" class="btn btn-sm btn-outline-info rounded-pill py-0 px-2 fw-bold texto-075"
                     :aria-label="`Ir al ${formatearTiempo(c.segundo)} del clip`" @click="emit('ir-a', c.segundo)">
               <i class="bi bi-play-fill" aria-hidden="true"></i> {{ formatearTiempo(c.segundo) }}
             </button>
-            <span class="fecha">{{ fechaHora(c.creadoEl) }}</span>
+            <span class="texto-075 text-muted">{{ fechaHora(c.creadoEl) }}</span>
             <button v-if="puedeBorrar(c)" type="button" class="btn btn-link btn-sm text-danger p-0 ms-auto"
                     :disabled="borrandoId === c.id" :aria-label="`Borrar el comentario de ${c.autor || 'usuario'}`" @click="borrar(c)">
               <i class="bi bi-trash3" aria-hidden="true"></i>
             </button>
           </div>
-          <p class="texto texto-pre-line">{{ c.texto }}</p>
-          <button v-if="puedeComentar && respondiendoA !== c.id" type="button" class="btn btn-link btn-sm p-0 mt-1 fw-bold responder"
+          <p class="small text-dark texto-pre-line mt-1 mb-0">{{ c.texto }}</p>
+          <button v-if="puedeComentar && respondiendoA !== c.id" type="button" class="btn btn-link btn-sm p-0 mt-1 fw-bold text-secondary text-decoration-none texto-075 align-self-start"
                   @click="abrirRespuesta(c)">
             <i class="bi bi-reply" aria-hidden="true"></i> Responder
           </button>
         </div>
 
-        <ul v-if="respuestasDe(c.id).length || respondiendoA === c.id" class="list-unstyled m-0 respuestas">
-          <li v-for="r in respuestasDe(c.id)" :key="r.id" class="comentario respuesta" :class="{ coordinacion: r.esCoordinacion }">
+        <ul v-if="respuestasDe(c.id).length || respondiendoA === c.id" class="list-unstyled m-0 ms-3 ps-2 border-start border-2 d-flex flex-column gap-2">
+          <li v-for="r in respuestasDe(c.id)" :key="r.id" class="card card-body shadow-sm border-light-subtle rounded-3 py-2 px-3" :class="{ 'border-start border-danger border-4': r.esCoordinacion }">
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <strong class="autor">{{ r.autor || 'Usuario' }}</strong>
-              <span v-if="r.esCoordinacion" class="badge-coordinacion">Coordinación</span>
-              <span class="fecha">{{ fechaHora(r.creadoEl) }}</span>
+              <strong class="small text-dark">{{ r.autor || 'Usuario' }}</strong>
+              <span v-if="r.esCoordinacion" class="estado-pill estado-rojo">Coordinación</span>
+              <span class="texto-075 text-muted">{{ fechaHora(r.creadoEl) }}</span>
               <button v-if="puedeBorrar(r)" type="button" class="btn btn-link btn-sm text-danger p-0 ms-auto"
                       :disabled="borrandoId === r.id" :aria-label="`Borrar la respuesta de ${r.autor || 'usuario'}`" @click="borrar(r)">
                 <i class="bi bi-trash3" aria-hidden="true"></i>
               </button>
             </div>
-            <p class="texto texto-pre-line">{{ r.texto }}</p>
+            <p class="small text-dark texto-pre-line mt-1 mb-0">{{ r.texto }}</p>
           </li>
           <!-- Responder a este comentario -->
           <li v-if="respondiendoA === c.id">
@@ -223,60 +225,3 @@ watch(() => props.idClip, () => {
 }, { immediate: true })
 </script>
 
-<style scoped>
-.comentarios {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--o-borde, #e2e8f0);
-}
-.titulo {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: var(--o-texto, #0f172a);
-  margin-bottom: 8px;
-}
-.cantidad { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); }
-.lista { display: flex; flex-direction: column; gap: 8px; }
-.hilo { display: flex; flex-direction: column; gap: 6px; }
-.respuestas {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-left: 18px;
-  padding-left: 10px;
-  border-left: 2px solid var(--o-borde, #e2e8f0);
-}
-.responder { font-size: 0.75rem; color: var(--o-texto-medio, #475569); text-decoration: none; }
-.comentario {
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: var(--o-fondo-suave, #f8fafc);
-  border: 1px solid var(--o-borde, #e2e8f0);
-}
-.comentario.coordinacion { border-left: 4px solid #dc2626; }
-.comentario.respuesta { padding: 6px 10px; }
-.autor { font-size: 0.8rem; color: var(--o-texto, #0f172a); }
-.fecha { font-size: 0.75rem; color: var(--o-texto-suave, #64748b); }
-.badge-coordinacion {
-  padding: 1px 8px;
-  border-radius: 50rem;
-  background: #dc2626;
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 800;
-}
-.texto { font-size: 0.85rem; color: var(--o-texto, #0f172a); margin: 4px 0 0; }
-.momento-comentario {
-  padding: 0 8px;
-  border-radius: 50rem;
-  border: 1px solid #0891b2;
-  color: #0e7490;
-  font-size: 0.72rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.6;
-}
-</style>

@@ -77,7 +77,7 @@
     </div>
 
     <!-- Herramientas de dibujo -->
-    <div v-if="dibujando" class="herramientas mt-2">
+    <div v-if="dibujando" class="card card-body shadow-sm border-light-subtle rounded-3 py-2 px-3 mt-2 d-flex flex-row flex-wrap align-items-center gap-2">
       <div class="btn-group btn-group-sm" role="group" aria-label="Herramienta">
         <button v-for="h in HERRAMIENTAS" :key="h.clave" type="button" class="btn" :class="herramienta === h.clave ? 'btn-dark' : 'btn-outline-dark'"
                 :aria-pressed="herramienta === h.clave" :title="h.nombre" @click="herramienta = h.clave">
@@ -99,7 +99,7 @@
     </div>
 
     <!-- Dibujo guardado en pantalla -->
-    <div v-if="anotacionVisible && !dibujando" class="aviso-dibujo mt-2">
+    <div v-if="anotacionVisible && !dibujando" class="card card-body shadow-sm border-light-subtle rounded-3 py-2 px-3 mt-2 d-flex flex-row flex-wrap align-items-center gap-2 small fw-bold text-dark">
       <i class="bi bi-pencil-square" aria-hidden="true"></i> Dibujo en {{ formatearTiempo(anotacionVisible.segundo) }}
       <button type="button" class="btn btn-sm btn-dark fw-bold ms-auto" @click="seguir">Seguir</button>
       <button v-if="puedeAnotar" type="button" class="btn btn-sm btn-light border text-danger" :disabled="guardando" @click="borrarDibujo(anotacionVisible)">
@@ -476,16 +476,6 @@ onBeforeUnmount(() => {
 .muestra-marca.comentario { background: #0891b2; border-radius: 50%; }
 .tiempo { font-variant-numeric: tabular-nums; font-size: 0.85rem; font-weight: 700; color: var(--o-texto, #0f172a); padding: 0 6px; }
 .selector-calidad { width: auto; }
-.herramientas, .aviso-dibujo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 12px;
-}
-.aviso-dibujo { font-size: 0.85rem; font-weight: 700; color: var(--o-texto, #0f172a); }
 .muestra {
   width: 26px;
   height: 26px;

@@ -5,12 +5,15 @@
       Podés elegir más de un canal.
       {{ publicaAutorizado ? 'Lo que publicás vos sale autorizado en todos.' : 'El coordinador general autoriza cada canal por separado.' }}
     </p>
-    <div class="canales" :class="{ 'con-error': invalido }">
-      <label v-for="c in opcionesCanal" :key="c.clave" class="opcion-canal" :class="{ elegida: modelValue.includes(c.clave) }">
+    <div class="row g-2" :class="{ 'border border-danger rounded-3 p-1 mx-0': invalido }">
+      <div v-for="c in opcionesCanal" :key="c.clave" class="col-12 col-sm-6 col-lg-4">
+      <label class="card shadow-sm rounded-3 py-2 px-3 h-100 d-flex flex-row align-items-center gap-2 small fw-semibold cursor-pointer mb-0"
+             :class="modelValue.includes(c.clave) ? 'border-danger bg-danger-subtle' : 'border-light-subtle'">
         <input type="checkbox" class="form-check-input mt-0" :value="c.clave" :checked="modelValue.includes(c.clave)" @change="alternar(c.clave)">
         <i :class="['bi', c.idGrupo === null ? 'bi-globe2' : 'bi-people-fill']" aria-hidden="true"></i>
         <span>{{ c.nombre }}</span>
       </label>
+      </div>
     </div>
     <p v-if="invalido" class="small text-danger mt-1 mb-0" role="alert">Elegí al menos un canal.</p>
     <p v-if="errorGrupos" class="small text-muted mt-1 mb-0">{{ errorGrupos }}</p>
@@ -51,26 +54,3 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-.canales {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 6px;
-  padding: 2px;
-  border-radius: 12px;
-}
-.canales.con-error { outline: 1px solid #dc3545; }
-.opcion-canal {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.opcion-canal.elegida { border-color: #dc2626; background: var(--o-rojo-fondo, #fef2f2); }
-.opcion-canal:focus-within { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 2px; }
-</style>

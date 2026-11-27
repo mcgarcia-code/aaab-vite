@@ -4,12 +4,12 @@
     <input ref="inputVideo" type="file" accept="video/*" class="d-none" aria-hidden="true" tabindex="-1" @change="elegirVideo">
 
     <!-- ============ EVENTO: todo gira alrededor de él (marcar → guardar → sincronizar → revisar y publicar) ============ -->
-    <section class="bloque mb-3" aria-labelledby="tv-titulo-evento">
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-        <h3 id="tv-titulo-evento" class="titulo-bloque m-0">
-          <i class="bi bi-calendar-event" aria-hidden="true"></i> {{ sesion.idEvento ? 'Evento abierto' : 'Evento nuevo' }}
-        </h3>
-        <span v-if="etapa" class="etapa" :class="etapa.clase"><i :class="['bi', etapa.icono]" aria-hidden="true"></i> {{ etapa.texto }}</span>
+    <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3" aria-labelledby="tv-titulo-evento">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
+        <h6 id="tv-titulo-evento" class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-event text-danger fs-5" aria-hidden="true"></i> {{ sesion.idEvento ? 'Evento abierto' : 'Evento nuevo' }}
+        </h6>
+        <span v-if="etapa" class="estado-pill" :class="etapa.clase"><i :class="['bi', etapa.icono]" aria-hidden="true"></i> {{ etapa.texto }}</span>
       </div>
 
       <div class="row g-2 align-items-end">
@@ -23,14 +23,7 @@
         </div>
         <div class="col-12 col-sm-7 col-md-4">
           <span id="tv-tiempo-tags" class="form-label small fw-bold d-block">Marcás con</span>
-          <div class="selector-modo" role="radiogroup" aria-labelledby="tv-tiempo-tags">
-            <button type="button" role="radio" :aria-checked="sesion.modo === 'vivo'" :class="{ activo: sesion.modo === 'vivo' }" @click="cambiarModo('vivo')">
-              <i class="bi bi-stopwatch" aria-hidden="true"></i> Cronómetro
-            </button>
-            <button type="button" role="radio" :aria-checked="sesion.modo === 'video'" :class="{ activo: sesion.modo === 'video' }" @click="cambiarModo('video')">
-              <i class="bi bi-film" aria-hidden="true"></i> Video
-            </button>
-          </div>
+          <PestanasSeccion :model-value="sesion.modo" :pestanas="PESTANAS_MODO" llenar aria-labelledby="tv-tiempo-tags" @update:model-value="cambiarModo" />
         </div>
       </div>
       <p class="small text-muted mt-2 mb-0">
@@ -38,7 +31,7 @@
         <template v-else>Con el video ya cargado: los tags toman el momento del video y quedan sincronizados.</template>
       </p>
 
-      <div class="barra-eventos mt-3">
+      <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
         <button type="button" class="btn btn-sm btn-danger rounded-pill fw-bold" :disabled="!sesion.tags.length || guardandoEvento" @click="guardarEventoActual">
           <span v-if="guardandoEvento" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
           <i v-else class="bi bi-floppy" aria-hidden="true"></i> {{ sesion.idEvento ? 'Guardar cambios' : 'Guardar evento' }}
@@ -49,8 +42,8 @@
         <button v-if="sesion.tags.length || sesion.idEvento" type="button" class="btn btn-sm btn-light border fw-bold" @click="confirmarNuevaSesion">
           <i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo evento
         </button>
-        <span v-if="hayCambiosSinGuardar" class="small fw-semibold texto-aviso"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Tags sin guardar</span>
-        <span v-else-if="sesion.idEvento" class="small fw-semibold text-success"><i class="bi bi-check-circle" aria-hidden="true"></i> Evento guardado</span>
+        <span v-if="hayCambiosSinGuardar" class="estado-pill estado-ambar"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Tags sin guardar</span>
+        <span v-else-if="sesion.idEvento" class="estado-pill estado-verde"><i class="bi bi-check-circle" aria-hidden="true"></i> Evento guardado</span>
       </div>
     </section>
 
@@ -59,7 +52,7 @@
       <div class="col-12 col-lg-8">
 
         <!-- Video del partido (marcando sobre el video, y con cronómetro para sincronizar) -->
-        <section v-if="sesion.modo === 'video' || mostrarVideoEnVivo" class="bloque mb-3">
+        <section v-if="sesion.modo === 'video' || mostrarVideoEnVivo" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
           <div v-if="!video.url" class="zona-video-vacia">
             <i class="bi bi-camera-video" aria-hidden="true"></i>
             <p class="fw-bold mb-1">Cargá el video del partido</p>
@@ -129,7 +122,7 @@
                         :tiempo="tiempoActual" :velocidad="velocidad" />
 
         <!-- Cronómetro (marcando mirando el partido) -->
-        <section v-if="sesion.modo === 'vivo'" class="bloque bloque-oscuro mb-3">
+        <section v-if="sesion.modo === 'vivo'" class="card card-body border-0 rounded-3 p-3 mb-3 bg-dark text-white">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <span class="estado-vivo" :class="{ corriendo: sesion.reloj.corriendo }">
               <span class="punto" aria-hidden="true"></span>
@@ -164,7 +157,7 @@
 
           <!-- Sincronización con el video -->
           <div class="sincronizar">
-            <h3 class="sincronizar-titulo"><i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizar con el video</h3>
+            <h6 class="text-white fw-bold small mb-2 text-uppercase d-flex align-items-center gap-2"><i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizar con el video</h6>
             <ol class="small mb-2 ps-3">
               <li>Cargá el video de este evento: el partido completo o el tiempo que marcaste.</li>
               <li>Llevalo hasta el pitazo con el que iniciaste el cronómetro.</li>
@@ -196,9 +189,9 @@
 
       <!-- ============ SITUACIONES: al costado del video/cronómetro para marcar sin dejar de mirar ============ -->
       <aside class="col-12 col-lg-4">
-        <section class="bloque pad-lateral">
-          <div class="mb-2">
-            <h3 class="titulo-bloque m-0">Marcar situación</h3>
+        <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3 pad-lateral">
+          <div class="mb-3 pb-2 border-bottom border-2 border-danger">
+            <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i class="bi bi-ui-checks-grid text-danger fs-5" aria-hidden="true"></i> Marcar situación</h6>
             <span class="small text-muted d-none d-md-block mt-1">
               <kbd class="tecla">1</kbd>–<kbd class="tecla">9</kbd> marcar ·
               <kbd class="tecla">Espacio</kbd> play/pausa · <kbd class="tecla">←</kbd><kbd class="tecla">→</kbd> 5 s ·
@@ -224,9 +217,9 @@
     </div>
 
     <!-- ============ CLIPS DEL EVENTO: revisar, ajustar, descargar y publicar ============ -->
-    <section class="bloque">
-      <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-        <h3 class="titulo-bloque m-0">Clips del evento <span class="badge bg-dark">{{ sesion.tags.length }}</span></h3>
+    <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3">
+      <div class="d-flex align-items-center justify-content-between gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
+        <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i class="bi bi-collection-play text-danger fs-5" aria-hidden="true"></i> Clips del evento <span class="badge rounded-pill bg-dark">{{ sesion.tags.length }}</span></h6>
       </div>
 
       <!-- Línea de tiempo por situación: ver, mover y ajustar cada clip -->
@@ -250,13 +243,13 @@
 
       <ul v-else class="list-unstyled row g-2 m-0">
         <li v-for="t in tagsOrdenados" :key="t.id" class="col-12 col-md-6 col-xxl-4">
-        <div class="clip h-100" :class="{ publicado: t.publicado }" :style="{ borderLeftColor: colorTag(t.color).solido }">
+        <div class="card shadow-sm border-light-subtle rounded-3 p-2 h-100 clip" :class="{ publicado: t.publicado }" :style="{ borderLeftColor: colorTag(t.color).solido }">
           <div class="d-flex align-items-start gap-2">
             <input v-if="puedePublicar" :id="'sel-' + t.id" v-model="t.seleccionado" type="checkbox" class="form-check-input mt-1"
                    :disabled="t.publicado || t.segundo === null" :aria-label="`Seleccionar ${t.titulo}`">
             <div class="flex-grow-1 min-w-0">
               <div class="d-flex align-items-center gap-1 flex-wrap">
-                <span class="badge-tag" :style="{ background: colorTag(t.color).fondo, color: colorTag(t.color).texto }">{{ t.nombre }}</span>
+                <span class="estado-pill" :style="{ background: colorTag(t.color).fondo, color: colorTag(t.color).texto }">{{ t.nombre }}</span>
                 <span v-if="t.publicado" class="estado-pill estado-verde">Publicado</span>
               </div>
               <div class="tiempo-clip">
@@ -287,7 +280,7 @@
             </button>
           </div>
           <!-- Ajuste del inicio y del fin del clip (segundos antes y después del momento marcado) -->
-          <div v-if="ajustando === t.id && t.segundo !== null" class="ajuste-clip mt-2">
+          <div v-if="ajustando === t.id && t.segundo !== null" class="ajuste-clip bg-light rounded-3 p-2 mt-2">
             <div v-for="campo in CAMPOS_AJUSTE" :key="campo.clave" class="d-flex align-items-center gap-1">
               <span class="small fw-bold etiqueta-ajuste">{{ campo.nombre }}</span>
               <button type="button" class="btn btn-sm btn-light border" :disabled="(t[campo.clave] ?? VENTANA_SEGUNDOS) <= AJUSTE_MINIMO"
@@ -305,7 +298,7 @@
       <div v-if="sesion.tags.length" class="row g-3 mt-1">
       <!-- Descargar: para todos (cada árbitro se lleva sus clips para analizarlos) -->
       <div class="col-12" :class="{ 'col-md-6': puedePublicar }">
-      <div class="pie-clips">
+      <div class="d-flex flex-column gap-2 border-top pt-3">
         <div v-if="recortando" class="d-flex align-items-center gap-2 small fw-semibold" role="status">
           <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> {{ progreso }}
         </div>
@@ -318,7 +311,7 @@
       </div>
 
       <div v-if="puedePublicar" class="col-12 col-md-6">
-      <div class="pie-clips">
+      <div class="d-flex flex-column gap-2 border-top pt-3">
         <span class="small text-muted">
           {{ seleccionados.length }} para publicar ·
           {{ publicaAutorizado ? 'salen autorizados' : 'quedan pendientes hasta que los autorice el coordinador general' }}
@@ -362,9 +355,9 @@
           {{ camarasSincronizadas.map(c => c.nombre).join(', ') }}.
         </p>
 
-        <div v-for="(c, i) in formPublicar.clips" :key="c.id" class="clip-publicar">
+        <div v-for="(c, i) in formPublicar.clips" :key="c.id" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
           <div class="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
-            <span class="badge-tag" :style="{ background: colorTag(c.color).fondo, color: colorTag(c.color).texto }">{{ i + 1 }}. {{ c.nombre }}</span>
+            <span class="estado-pill" :style="{ background: colorTag(c.color).fondo, color: colorTag(c.color).texto }">{{ i + 1 }}. {{ c.nombre }}</span>
             <span class="small text-muted">{{ formatearTiempo(limitesDeTag(c, video.duracion).inicio) }} – {{ formatearTiempo(limitesDeTag(c, video.duracion).fin) }}</span>
           </div>
           <label :for="'pub-titulo-' + c.id" class="form-label small fw-bold">Título *</label>
@@ -430,10 +423,10 @@
       <EstadoVacio v-else-if="!eventos.length" icono="bi-folder2" titulo="Todavía no guardaste eventos" mensaje="Marcá tus tags y tocá “Guardar evento”." />
 
       <ul v-else class="list-unstyled m-0 d-flex flex-column gap-2">
-        <li v-for="ev in eventos" :key="ev.id" class="evento-guardado" :class="{ actual: ev.id === sesion.idEvento }">
+        <li v-for="ev in eventos" :key="ev.id" class="card card-body shadow-sm border-light-subtle rounded-3 py-2 px-3 d-flex flex-row align-items-center gap-2" :class="{ 'border-danger border-2': ev.id === sesion.idEvento }">
           <div class="flex-grow-1 min-w-0">
             <div class="fw-bold text-truncate">{{ ev.partido || 'Partido sin nombre' }}</div>
-            <span class="etapa mt-1" :class="estadoEvento(ev).clase">
+            <span class="estado-pill mt-1" :class="estadoEvento(ev).clase">
               <i :class="['bi', estadoEvento(ev).icono]" aria-hidden="true"></i> {{ estadoEvento(ev).texto }}
             </span>
             <div class="small text-muted mt-1">
@@ -468,6 +461,7 @@ import { fechaDMA } from '@/utils/fechas'
 import { crearZip, descargarBlob } from '@/utils/zip'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import {
   useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesDeTag, idGrupoDeClave, DECISIONES, AJUSTE_MINIMO, AJUSTE_MAXIMO
 } from '@/composables/useAaabTv'
@@ -496,6 +490,11 @@ const { recortando, progreso, recortar } = useRecorteClips()
 const VELOCIDADES = [0.5, 1, 2]
 // Cuadro a cuadro: se detectan los cuadros por segundo del video mientras se reproduce (30 hasta saberlo)
 const { cuadrosPorSegundo, duracionCuadro, detectado: fpsDetectado, observar: observarCuadros } = useCuadrosPorSegundo()
+// Cómo se toma el tiempo de los tags (se guarda como modo del evento)
+const PESTANAS_MODO = [
+  { clave: 'vivo', etiqueta: 'Cronómetro', icono: 'bi-stopwatch' },
+  { clave: 'video', etiqueta: 'Video', icono: 'bi-film' }
+]
 const CAMPOS_AJUSTE = [
   { clave: 'antes', nombre: 'Antes' },
   { clave: 'despues', nombre: 'Después' }
@@ -636,9 +635,9 @@ const cambiarModo = (modo) => {
 
 // En qué paso está el evento abierto: marcar → sincronizar → revisar y publicar
 const ETAPAS = {
-  sincronizar: { texto: 'Falta sincronizar con el video', clase: 'etapa-ambar', icono: 'bi-link-45deg' },
-  sinVideo: { texto: 'Cargá el video para ver los clips', clase: 'etapa-gris', icono: 'bi-camera-video' },
-  listo: { texto: 'Listo para revisar y publicar', clase: 'etapa-verde', icono: 'bi-check2-circle' }
+  sincronizar: { texto: 'Falta sincronizar con el video', clase: 'estado-ambar', icono: 'bi-link-45deg' },
+  sinVideo: { texto: 'Cargá el video para ver los clips', clase: 'estado-gris', icono: 'bi-camera-video' },
+  listo: { texto: 'Listo para revisar y publicar', clase: 'estado-verde', icono: 'bi-check2-circle' }
 }
 const etapa = computed(() => {
   if (!sesion.tags.length) return null
@@ -946,60 +945,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.bloque {
-  background: var(--o-tarjeta, #fff);
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 16px;
-  padding: 14px;
-}
-
-/* Barra de eventos guardados */
-.barra-eventos {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.texto-aviso { color: var(--o-ambar-texto, #b45309); }
-
-.evento-guardado {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 12px;
-  background: var(--o-tarjeta, #fff);
-}
-.evento-guardado.actual { border-color: #dc2626; box-shadow: 0 0 0 1px #dc2626; }
 .min-w-0 { min-width: 0; }
-.bloque-oscuro {
-  background: #0f172a;
-  border-color: var(--o-texto, #0f172a);
-  color: #e2e8f0;
-}
-.titulo-bloque { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); }
-
-/* Selector de modo */
-.selector-modo {
-  display: flex;
-  background: var(--o-chip, #f1f5f9);
-  border-radius: 12px;
-  padding: 3px;
-  gap: 3px;
-}
-.selector-modo button {
-  flex: 1;
-  min-height: 38px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--o-texto-medio, #475569);
-}
-.selector-modo button.activo { background: #0f172a; color: #fff; }
-
 /* Video */
 .zona-video-vacia {
   text-align: center;
@@ -1100,7 +1046,6 @@ onBeforeUnmount(() => {
   padding-top: 14px;
   border-top: 1px solid #334155;
 }
-.sincronizar-titulo { font-size: 0.9rem; font-weight: 800; color: #fff; margin-bottom: 6px; }
 .input-tiempo { width: 80px; text-align: center; }
 
 /* Pad */
@@ -1191,52 +1136,15 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Paso en el que está el evento */
-.etapa {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 50rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-.etapa-ambar { background: var(--o-ambar-fondo, #fef3c7); color: var(--o-ambar-texto, #b45309); }
-.etapa-verde { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); }
-.etapa-gris { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); }
-
 /* Clips */
-.clip {
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-left: 4px solid;
-  border-radius: 12px;
-  padding: 10px;
-}
+.clip { border-left-width: 4px !important; }
 .clip.publicado { background: var(--o-superficie, #f8fafc); opacity: 0.8; }
-.badge-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
 .tiempo-clip { font-size: 0.8rem; font-weight: 700; color: var(--o-texto-medio, #475569); margin-top: 4px; font-variant-numeric: tabular-nums; }
-.pie-clips {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  border-top: 1px solid var(--o-borde, #e2e8f0);
-  padding-top: 10px;
-  margin-top: 4px;
-}
 .ajuste-clip {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 14px;
-  padding: 8px;
-  border-radius: 10px;
-  background: var(--o-fondo-suave, #f8fafc);
 }
 .etiqueta-ajuste { min-width: 52px; color: var(--o-texto-medio, #475569); }
 .valor-ajuste { min-width: 36px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -1248,12 +1156,6 @@ onBeforeUnmount(() => {
 .cantidad-resumen { text-align: right; font-weight: 800; color: var(--o-texto, #0f172a); font-variant-numeric: tabular-nums; }
 @media (min-width: 768px) {
   .resumen-evento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
-}
-.clip-publicar {
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 10px;
 }
 
 .min-w-0 { min-width: 0; }

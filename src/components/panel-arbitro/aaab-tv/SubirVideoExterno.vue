@@ -1,10 +1,10 @@
 <template>
   <div>
     <!-- Para qué sirve esta pestaña -->
-    <div class="explicacion mb-3">
-      <i class="bi bi-whatsapp" aria-hidden="true"></i>
+    <div class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3 d-flex flex-row gap-3">
+      <i class="bi bi-whatsapp text-success fs-3 lh-1" aria-hidden="true"></i>
       <div>
-        <p class="fw-bold mb-1">Subir un video externo</p>
+        <h6 class="fw-bold text-dark text-uppercase mb-1">Subir un video externo</h6>
         <p class="small mb-0">
           Usá esta pestaña para publicar jugadas que no salen de un análisis: por ejemplo, un video que te mandaron por WhatsApp.
           El video se publica entero, como un solo clip, sin marcar tags ni sincronizar.
@@ -234,16 +234,6 @@ onBeforeUnmount(liberarPrevia)
 </script>
 
 <style scoped>
-.explicacion {
-  display: flex;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  background: var(--o-fondo-suave, #f8fafc);
-  color: var(--o-texto, #0f172a);
-}
-.explicacion > .bi { font-size: 1.5rem; color: #16a34a; line-height: 1; }
 .zona-vacia {
   display: flex;
   flex-direction: column;

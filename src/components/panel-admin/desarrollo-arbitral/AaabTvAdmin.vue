@@ -29,18 +29,13 @@
 
           <!-- ======================= AUTORIZAR ======================= -->
           <template v-else>
-          <div class="input-group buscador mb-3">
-            <span class="input-group-text bg-white"><i class="bi bi-search" aria-hidden="true"></i></span>
-            <input v-model="busqueda" type="search" class="form-control border-start-0" aria-label="Buscar clips" placeholder="Título, partido, autor o canal">
+          <div class="input-group shadow-sm buscador mb-3">
+            <span class="input-group-text bg-white control-barra"><i class="bi bi-search" aria-hidden="true"></i></span>
+            <input v-model="busqueda" type="search" class="form-control border-start-0 control-barra" aria-label="Buscar clips" placeholder="Título, partido, autor o canal">
           </div>
 
           <!-- Filtro por estado -->
-          <div class="estados mb-3" role="tablist" aria-label="Filtrar por estado">
-            <button v-for="f in FILTROS" :key="f.clave" type="button" role="tab" :aria-selected="filtro === f.clave"
-                    :class="{ activo: filtro === f.clave }" @click="filtro = f.clave">
-              {{ f.etiqueta }} <span class="badge rounded-pill">{{ cantidadPor(f.clave) }}</span>
-            </button>
-          </div>
+          <PestanasSeccion v-model="filtro" :pestanas="pestanasFiltro" class="mb-3" aria-label="Filtrar por estado" />
 
           <p class="small text-muted mb-3">
             <i class="bi bi-info-circle" aria-hidden="true"></i>
@@ -57,32 +52,32 @@
                        :titulo="filtro === 'pendiente' ? 'No hay clips pendientes' : 'No hay clips'"
                        mensaje="Los clips que publiquen coordinadores y observadores aparecen acá." />
 
-          <ul v-else class="list-unstyled m-0 lista">
-            <li v-for="c in paginados" :key="c.id" class="fila" :style="{ borderLeftColor: colorTag(c.color).solido }">
+          <ul v-else class="list-unstyled m-0">
+            <li v-for="c in paginados" :key="c.id" class="card shadow-sm border-light-subtle rounded-3 p-3 mb-3 d-flex flex-row flex-wrap align-items-start gap-2 fila" :style="{ borderLeftColor: colorTag(c.color).solido }">
               <div class="flex-grow-1 min-w-0">
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-1">
-                  <span class="badge-tag" :style="{ background: colorTag(c.color).solido }">{{ c.etiqueta }}</span>
+                  <span class="estado-pill text-white" :style="{ background: colorTag(c.color).solido }">{{ c.etiqueta }}</span>
                   <span v-if="DECISIONES[c.decision]" class="estado-pill" :class="DECISIONES[c.decision].clase">
                     <i :class="['bi', DECISIONES[c.decision].icono]" aria-hidden="true"></i> {{ DECISIONES[c.decision].etiqueta }}
                   </span>
                 </div>
-                <h3 class="titulo-clip text-truncate">{{ c.titulo }}</h3>
-                <p class="datos-clip">
+                <h6 class="fw-bold text-dark mb-1 text-truncate">{{ c.titulo }}</h6>
+                <p class="small text-muted mb-0">
                   <template v-if="c.origen === 'externo'">Video externo<template v-if="c.partido"> · {{ c.partido }}</template> · {{ fechaArg(c.fecha) }}</template>
                   <template v-else>{{ c.partido }} · {{ fechaArg(c.fecha) }} · min. {{ formatearTiempo(c.inicio + (c.fin - c.inicio) / 2) }}</template>
                   <template v-if="c.autor"> · Publicó {{ c.autor }}</template>
                 </p>
 
                 <!-- Un renglón por canal: su estado y los botones para autorizar o no -->
-                <ul class="list-unstyled m-0 mt-2 destinos">
-                  <li v-for="d in c.destinos" :key="claveCanal(d.idGrupo)" class="destino">
-                    <span class="nombre-canal">
+                <ul class="list-unstyled m-0 mt-2 d-flex flex-column gap-2">
+                  <li v-for="d in c.destinos" :key="claveCanal(d.idGrupo)" class="d-flex flex-wrap align-items-center gap-2 pt-2 border-top">
+                    <span class="small fw-bold text-secondary nombre-canal">
                       <i :class="['bi', d.idGrupo === null ? 'bi-globe2' : 'bi-people-fill']" aria-hidden="true"></i> {{ d.nombre }}
                     </span>
                     <span class="estado-pill" :class="ESTADOS_DESTINO[d.estado].clase">
                       <i :class="['bi', ESTADOS_DESTINO[d.estado].icono]" aria-hidden="true"></i> {{ ESTADOS_DESTINO[d.estado].etiqueta }}
                     </span>
-                    <span class="acciones-destino">
+                    <span class="d-flex flex-wrap gap-2 ms-md-auto acciones-destino">
                       <button v-if="d.estado !== 'autorizado'" type="button" class="btn btn-sm btn-success fw-bold"
                               :disabled="ocupado === claveOcupado(c, d)" @click="cambiar(c, d, 'autorizado')">
                         <i class="bi bi-check-lg" aria-hidden="true"></i> Autorizar
@@ -95,7 +90,7 @@
                   </li>
                 </ul>
               </div>
-              <div class="acciones">
+              <div class="d-flex flex-wrap gap-2 acciones">
                 <button type="button" class="btn btn-sm btn-light border fw-bold" @click="abrir(c)">
                   <i class="bi bi-pencil-square" aria-hidden="true"></i> Revisar y comentar
                 </button>
@@ -117,7 +112,7 @@
                            :guardando="guardandoDibujo" @guardar-anotaciones="guardarDibujos" />
 
           <div class="d-flex flex-wrap gap-2 align-items-center small text-muted mt-3">
-            <span class="badge-tag" :style="{ background: colorTag(editando.color).solido }">{{ editando.etiqueta }}</span>
+            <span class="estado-pill text-white" :style="{ background: colorTag(editando.color).solido }">{{ editando.etiqueta }}</span>
             <span v-if="editando.origen === 'externo'">Video externo</span>
             <span>{{ editando.partido ? `${editando.partido} · ` : '' }}{{ fechaArg(editando.fecha) }}</span>
             <span v-if="editando.autor">· Publicó {{ editando.autor }}</span>
@@ -147,8 +142,8 @@
           <DatosJugada id="clip-admin-jugada" v-model="form.jugada" />
 
           <span class="form-label small fw-bold d-block mt-3">Autorización por canal</span>
-          <div v-for="d in form.destinos" :key="claveCanal(d.idGrupo)" class="destino-form">
-            <span class="nombre-canal">
+          <div v-for="d in form.destinos" :key="claveCanal(d.idGrupo)" class="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 border-bottom">
+            <span class="small fw-bold text-secondary nombre-canal">
               <i :class="['bi', d.idGrupo === null ? 'bi-globe2' : 'bi-people-fill']" aria-hidden="true"></i> {{ d.nombre }}
             </span>
             <div class="btn-group btn-group-sm" role="radiogroup" :aria-label="`Autorización en ${d.nombre}`">
@@ -261,6 +256,8 @@ const FILTROS = [
 const CLASE_BOTON = { pendiente: 'btn-warning', autorizado: 'btn-success', no_autorizado: 'btn-dark' }
 
 const filtro = ref('pendiente')
+// Pestañas de estado con la cantidad de clips de cada una
+const pestanasFiltro = computed(() => FILTROS.map(f => ({ ...f, cantidad: cantidadPor(f.clave) })))
 const busqueda = ref('')
 
 const cantidadPor = (clave) => (clave === 'todos'
@@ -382,74 +379,13 @@ const guardar = async () => {
 
 <style scoped>
 .buscador { max-width: 340px; }
-.estados {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.estados button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 36px;
-  padding: 0 14px;
-  border-radius: 50rem;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  background: var(--o-tarjeta, #fff);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--o-texto-medio, #475569);
-}
-.estados .badge { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); }
-.estados button.activo { background: #0f172a; border-color: var(--o-texto, #0f172a); color: #fff; }
-.estados button.activo .badge { background: #dc2626; color: #fff; }
-.fila {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-left: 4px solid;
-  border-radius: 12px;
-}
-.titulo-clip { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); margin: 0 0 2px; }
-.datos-clip { font-size: 0.8rem; color: var(--o-texto-suave, #64748b); margin: 0; }
-.acciones { display: flex; flex-wrap: wrap; gap: 6px; }
-.destinos { display: flex; flex-direction: column; gap: 6px; }
-.destino {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 10px;
-  padding-top: 6px;
-  border-top: 1px dashed var(--o-borde, #e2e8f0);
-}
-.nombre-canal { font-size: 0.8rem; font-weight: 700; color: var(--o-texto-medio, #475569); min-width: 120px; }
-.acciones-destino { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
-.destino-form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--o-borde, #e2e8f0);
-}
+.fila { border-left: 4px solid !important; }
+.nombre-canal { min-width: 120px; }
 @media (max-width: 767px) {
   .acciones { width: 100%; }
   .acciones .btn { flex: 1; }
   .acciones-destino { width: 100%; margin-left: 0; }
   .acciones-destino .btn { flex: 1; }
-}
-.badge-tag {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 8px;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 800;
 }
 .min-w-0 { min-width: 0; }
 </style>

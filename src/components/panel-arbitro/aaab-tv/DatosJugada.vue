@@ -1,5 +1,5 @@
 <template>
-  <div class="datos-jugada">
+  <div class="mt-2">
     <button type="button" class="btn btn-link btn-sm p-0 fw-bold text-decoration-none" :aria-expanded="abierto" @click="abierto = !abierto">
       <i :class="['bi', abierto ? 'bi-chevron-down' : 'bi-chevron-right']" aria-hidden="true"></i>
       Datos de la jugada <span class="fw-normal text-muted">(opcional)</span>
@@ -59,6 +59,3 @@ const cambiar = (campo, valor) => {
 }
 </script>
 
-<style scoped>
-.datos-jugada { margin-top: 8px; }
-</style>

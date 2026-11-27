@@ -1,7 +1,7 @@
 <template>
-  <section class="bloque mb-3">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-      <h3 class="titulo-bloque m-0"><i class="bi bi-camera-video" aria-hidden="true"></i> Otras cámaras</h3>
+  <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
+      <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i class="bi bi-camera-video text-danger fs-5" aria-hidden="true"></i> Otras cámaras</h6>
       <button type="button" class="btn btn-sm btn-light border fw-bold" @click="elegirPara(null)">
         <i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar cámara
       </button>
@@ -14,7 +14,7 @@
     </p>
 
     <div v-else class="grilla-camaras">
-      <article v-for="c in sesion.camaras" :key="c.id" class="camara">
+      <article v-for="c in sesion.camaras" :key="c.id" class="card shadow-sm border-light-subtle rounded-3 p-2">
         <div class="marco-camara">
           <video v-if="archivoCamara(c.id)" :ref="el => registrar(c.id, el)" :src="archivoCamara(c.id).url" playsinline muted preload="metadata" controls></video>
           <!-- Cámara guardada en el evento: el archivo es local y hay que volver a elegirlo -->
@@ -119,11 +119,6 @@ watch(() => props.velocidad, (vel) => {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
 }
-.camara {
-  padding: 8px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 12px;
-}
 .marco-camara {
   aspect-ratio: 16 / 9;
   background: #000;
@@ -147,5 +142,4 @@ watch(() => props.velocidad, (vel) => {
   font-weight: 700;
 }
 .falta-archivo .bi { font-size: 1.6rem; }
-.titulo-bloque { font-size: 0.95rem; font-weight: 800; color: var(--o-texto, #0f172a); }
 </style>

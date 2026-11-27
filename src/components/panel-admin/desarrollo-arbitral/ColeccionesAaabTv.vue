@@ -14,7 +14,7 @@
     <EstadoVacio v-if="!coleccionesAdmin.length" icono="bi-bookmark-star" titulo="Todavía no hay colecciones"
                  mensaje="Creá la primera con “Nueva colección”." />
     <ul v-else class="list-unstyled m-0 d-flex flex-column gap-2">
-      <li v-for="c in coleccionesAdmin" :key="c.id" class="fila">
+      <li v-for="c in coleccionesAdmin" :key="c.id" class="card shadow-sm border-light-subtle rounded-3 py-2 px-3 d-flex flex-row align-items-center gap-2">
         <div class="flex-grow-1 min-w-0">
           <div class="fw-bold text-truncate">{{ c.nombre }}</div>
           <div class="small text-muted">
@@ -58,12 +58,12 @@
         </div>
 
         <!-- Clips elegidos, en orden -->
-        <h3 class="subtitulo mt-3">Clips de la colección ({{ form.idsClips.length }})</h3>
+        <h6 class="fw-bold text-dark text-uppercase small mt-3 mb-2 pb-2 border-bottom border-2 border-danger">Clips de la colección ({{ form.idsClips.length }})</h6>
         <p v-if="intento && !form.idsClips.length" class="small text-danger mb-2" role="alert">Agregá al menos un clip.</p>
         <p v-else-if="!form.idsClips.length" class="small text-muted mb-2">Agregalos desde la lista de abajo.</p>
         <ol v-else class="list-unstyled m-0 d-flex flex-column gap-1 mb-2">
-          <li v-for="(id, i) in form.idsClips" :key="id" class="elegido">
-            <span class="numero">{{ i + 1 }}</span>
+          <li v-for="(id, i) in form.idsClips" :key="id" class="card shadow-sm border-light-subtle rounded-3 py-1 px-2 d-flex flex-row align-items-center gap-2">
+            <span class="badge rounded-pill bg-dark flex-shrink-0">{{ i + 1 }}</span>
             <span class="flex-grow-1 min-w-0 text-truncate small fw-semibold">{{ tituloDe(id) }}</span>
             <button type="button" class="btn btn-sm btn-light border" :disabled="i === 0" :aria-label="`Subir ${tituloDe(id)}`" @click="mover(i, -1)">
               <i class="bi bi-arrow-up" aria-hidden="true"></i>
@@ -78,11 +78,11 @@
         </ol>
 
         <!-- Clips disponibles: autorizados en el canal elegido -->
-        <h3 class="subtitulo mt-3">Agregar clips autorizados en {{ nombreCanalElegido }}</h3>
-        <input v-model="busqueda" type="search" class="form-control form-control-sm mb-2" aria-label="Buscar clips para agregar" placeholder="Buscar por título, situación o partido">
+        <h6 class="fw-bold text-dark text-uppercase small mt-3 mb-2 pb-2 border-bottom border-2 border-danger">Agregar clips autorizados en {{ nombreCanalElegido }}</h6>
+        <input v-model="busqueda" type="search" class="form-control form-control-sm shadow-sm mb-2" aria-label="Buscar clips para agregar" placeholder="Buscar por título, situación o partido">
         <p v-if="!disponibles.length" class="small text-muted m-0">No hay más clips autorizados en este canal.</p>
-        <ul v-else class="list-unstyled m-0 disponibles">
-          <li v-for="c in disponibles" :key="c.id" class="disponible">
+        <ul v-else class="list-unstyled m-0 d-flex flex-column gap-1 disponibles">
+          <li v-for="c in disponibles" :key="c.id" class="card shadow-sm border-light-subtle rounded-3 py-1 px-2 d-flex flex-row align-items-center gap-2">
             <span class="flex-grow-1 min-w-0">
               <span class="d-block small fw-semibold text-truncate">{{ c.titulo }}</span>
               <span class="d-block small text-muted text-truncate">{{ c.etiqueta }} · {{ c.partido || 'Video externo' }} · {{ fechaArg(c.fecha) }}</span>
@@ -215,27 +215,5 @@ const confirmarBorrar = (coleccion) => {
 </script>
 
 <style scoped>
-.fila, .elegido, .disponible {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 12px;
-}
-.elegido, .disponible { padding: 6px 10px; border-radius: 10px; }
-.subtitulo { font-size: 0.85rem; font-weight: 800; color: var(--o-texto, #0f172a); margin-bottom: 6px; }
-.numero {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--o-chip, #e2e8f0);
-  font-size: 0.75rem;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-.disponibles { display: flex; flex-direction: column; gap: 4px; max-height: 280px; overflow-y: auto; }
+.disponibles { max-height: 280px; overflow-y: auto; }
 </style>
