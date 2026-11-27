@@ -5,6 +5,10 @@
       <button v-for="p in PERIODOS" :key="p.clave" type="button" class="filtro" :class="{ activo: periodo === p.clave }"
               :aria-pressed="periodo === p.clave" @click="periodo = p.clave">{{ p.etiqueta }}</button>
       <span class="small text-muted ms-auto">{{ clipsDelPeriodo.length }} clips en el período</span>
+      <button type="button" class="btn btn-sm btn-success fw-bold" :disabled="!clipsDelPeriodo.length || exportando" @click="exportarExcel">
+        <span v-if="exportando" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        <i v-else class="bi bi-file-earmark-excel" aria-hidden="true"></i> Exportar a Excel
+      </button>
     </div>
 
     <EstadoVacio v-if="!clipsDelPeriodo.length" icono="bi-bar-chart" titulo="No hay clips en este período" mensaje="Probá con un período más largo." />
@@ -121,9 +125,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { DECISIONES, estadoGeneral } from '@/composables/useAaabTv'
+import { DECISIONES, ESTADOS_DESTINO, estadoGeneral, formatearTiempo } from '@/composables/useAaabTv'
+import { pintarCeldaExcel, pintarCabeceraExcel, anchosColumnasExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'
+import { fechaArg } from '@/utils/fechas'
 
 // Estadísticas de AAAB TV para el coordinador general, a partir de todos los clips.
 // Conteos con barras de un solo color (magnitud); las decisiones con los colores de estado,
@@ -198,8 +204,8 @@ const porMes = computed(() => {
 const maximoMes = computed(() => Math.max(1, ...porMes.value.map(m => m.cantidad)))
 const alto = (cantidad) => `${(cantidad / maximoMes.value) * 100}%`
 
-// Por árbitro involucrado: cuántas decisiones correctas, incorrectas y a revisar
-const porArbitro = computed(() => {
+// Por árbitro involucrado: cuántas decisiones correctas, incorrectas y a revisar (todos, para el Excel)
+const decisionesPorArbitro = computed(() => {
   const mapa = new Map()
   clipsDelPeriodo.value.forEach(c => {
     if (!DECISIONES[c.decision]) return
@@ -211,8 +217,10 @@ const porArbitro = computed(() => {
       mapa.set(a.id, fila)
     })
   })
-  return [...mapa.values()].sort((a, b) => b.total - a.total).slice(0, MAXIMO_ARBITROS)
+  return [...mapa.values()].sort((a, b) => b.total - a.total)
 })
+// En pantalla, los que tienen más clips
+const porArbitro = computed(() => decisionesPorArbitro.value.slice(0, MAXIMO_ARBITROS))
 const maximoArbitro = computed(() => Math.max(1, ...porArbitro.value.map(a => a.total)))
 
 // Los 10 clips con más vistas (cada persona cuenta una vez por clip)
@@ -223,6 +231,98 @@ const masVistos = computed(() => clipsDelPeriodo.value
 const maximoVistas = computed(() => Math.max(1, ...masVistos.value.map(c => c.cantidadVistas)))
 
 const ancho = (cantidad, lista) => `${(cantidad / Math.max(1, ...lista.map(f => f.cantidad))) * 100}%`
+
+// ─── Exportar a Excel ─────────────────────────────────────
+// Un libro con el resumen, una hoja por cada gráfico y el detalle de todos los clips del período
+const toast = inject('toast')
+const exportando = ref(false)
+
+// Hoja con cabecera fija y bordes en todas las celdas
+const agregarHoja = (libro, nombre, cabeceras, filas, anchos, columnasTexto = [0]) => {
+  const hoja = libro.addWorksheet(nombre, { views: [{ state: 'frozen', ySplit: 1 }] })
+  hoja.addRow(cabeceras)
+  filas.forEach(fila => hoja.addRow(fila))
+  pintarCabeceraExcel(hoja, 30)
+  hoja.eachRow((fila, numero) => {
+    if (numero === 1) return
+    fila.eachCell({ includeEmpty: true }, (celda, columna) => {
+      pintarCeldaExcel(celda, '', { izquierda: columnasTexto.includes(columna - 1), ajustar: true })
+    })
+  })
+  anchosColumnasExcel(hoja, anchos)
+  return hoja
+}
+
+const porcentaje = (parte, total) => (total ? Math.round((parte / total) * 100) : null)
+
+const exportarExcel = async () => {
+  exportando.value = true
+  try {
+    const { default: ExcelJS } = await import('exceljs')
+    const libro = new ExcelJS.Workbook()
+    const nombrePeriodo = PERIODOS.find(p => p.clave === periodo.value)?.etiqueta || 'Todo'
+
+    agregarHoja(libro, 'Resumen', ['Dato', 'Valor'], [
+      ['Período', nombrePeriodo],
+      ['Exportado el', new Date().toLocaleString('es-AR')],
+      ['Clips publicados', clipsDelPeriodo.value.length],
+      ['Pendientes de autorizar', cantidadPendientes.value],
+      ['Autorizados en algún canal', cantidadAutorizados.value],
+      ['Decisiones valoradas (correctas o incorrectas)', valorados.value.length],
+      ['Decisiones correctas (%)', porcentajeCorrectas.value ?? '—'],
+      ['Vistas registradas', clipsDelPeriodo.value.reduce((s, c) => s + (c.cantidadVistas || 0), 0)]
+    ], [44, 24])
+
+    agregarHoja(libro, 'Por situación', ['Situación', 'Clips'],
+      porSituacion.value.map(f => [f.nombre, f.cantidad]), [30, 10])
+
+    agregarHoja(libro, 'Por canal', ['Canal', 'Clips autorizados'],
+      porCanal.value.map(f => [f.nombre, f.cantidad]), [30, 18])
+
+    agregarHoja(libro, 'Por mes', ['Mes', 'Clips publicados'],
+      porMes.value.map(m => [m.nombre, m.cantidad]), [16, 18])
+
+    agregarHoja(libro, 'Decisiones por árbitro', ['Árbitro', 'Correctas', 'Incorrectas', 'A revisar', 'Total', 'Correctas (%)'],
+      decisionesPorArbitro.value.map(a => [
+        a.nombre, a.correcta, a.incorrecta, a.a_revisar, a.total,
+        porcentaje(a.correcta, a.correcta + a.incorrecta) ?? '—'
+      ]), [32, 12, 12, 12, 10, 14])
+
+    agregarHoja(libro, 'Quién publica', ['Autor', 'Clips'],
+      contar(clipsDelPeriodo.value, c => c.autor || 'Sin nombre').map(f => [f.nombre, f.cantidad]), [32, 10])
+
+    agregarHoja(libro, 'Clips', [
+      'Título', 'Situación', 'Partido', 'Fecha', 'Minuto', 'Duración', 'Origen', 'Publicó', 'Publicado el',
+      'Estado', 'Canales', 'Decisión', 'Árbitros involucrados', 'Vistas', 'Descripción'
+    ], [...clipsDelPeriodo.value]
+      .sort((a, b) => String(b.publicadoEl || '').localeCompare(String(a.publicadoEl || '')))
+      .map(c => [
+        c.titulo,
+        c.etiqueta,
+        c.partido || '',
+        fechaArg(c.fecha),
+        c.origen === 'externo' ? '' : formatearTiempo((c.inicio + c.fin) / 2),
+        formatearTiempo(c.fin - c.inicio),
+        c.origen === 'externo' ? 'Video externo' : 'Análisis',
+        c.autor || '',
+        c.publicadoEl ? new Date(c.publicadoEl).toLocaleString('es-AR') : '',
+        ESTADOS_DESTINO[estadoGeneral(c)]?.etiqueta || '',
+        c.destinos.map(d => `${d.nombre}: ${ESTADOS_DESTINO[d.estado]?.etiqueta || d.estado}`).join(' · '),
+        DECISIONES[c.decision]?.etiqueta || 'Sin valorar',
+        (c.arbitros || []).map(a => a.nombre).join(' · '),
+        c.cantidadVistas || 0,
+        c.descripcion || ''
+      ]), [36, 18, 28, 12, 9, 10, 14, 22, 18, 14, 40, 13, 34, 8, 50], [0, 1, 2, 7, 10, 12, 14])
+
+    const hoy = new Date().toISOString().slice(0, 10)
+    await descargarLibroExcel(libro, `aaab-tv-estadisticas-${periodo.value === 'todo' ? 'todo' : `${periodo.value}-dias`}-${hoy}.xlsx`)
+  } catch (e) {
+    console.error('Exportar estadísticas de AAAB TV:', e)
+    toast({ tipo: 'danger', titulo: 'No se pudo exportar', mensaje: 'Intentá de nuevo en un rato.' })
+  } finally {
+    exportando.value = false
+  }
+}
 </script>
 
 <style scoped>
