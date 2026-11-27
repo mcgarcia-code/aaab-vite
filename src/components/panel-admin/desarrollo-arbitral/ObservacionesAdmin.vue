@@ -800,7 +800,18 @@ const guardarCambiosGestion = async () => {
     const res = await api.post({ entity: 'observaciones', action: 'actualizarEstado', payload: payload })
 
     if (res && res.ok) {
-      toast({ titulo: 'Actualizado', mensaje: 'Observación modificada con éxito.', tipo: 'success' })
+      // Mismo criterio que el back: avisa si queda resuelta y cambió el estado o los comentarios
+      const estadoAnterior = (observacionActual.value.estado || '').toLowerCase()
+      const comentarioAnterior = (observacionActual.value.comentario_estado || '').trim()
+      const notificaObservador = ['aprobada', 'rechazada', 'anulada'].includes(nuevoEstado.value) &&
+        (nuevoEstado.value !== estadoAnterior || comentariosRevision.value.trim() !== comentarioAnterior)
+      toast({
+        titulo: 'Actualizado',
+        mensaje: notificaObservador
+          ? 'Observación modificada. Se le avisó por mail al observador.'
+          : 'Observación modificada con éxito.',
+        tipo: 'success'
+      })
       await obtenerObservaciones()
       cerrarModal()
     } else {

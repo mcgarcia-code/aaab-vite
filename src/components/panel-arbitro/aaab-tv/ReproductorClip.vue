@@ -135,7 +135,9 @@ const props = defineProps({
   comentarios: { type: Array, default: () => [] }
 })
 // posicion: segundo actual dentro del clip (para comentar sobre ese momento)
-const emit = defineEmits(['guardar-anotaciones', 'posicion'])
+// visto: el clip se reprodujo lo suficiente para contarlo como visto (una vez por clip)
+const emit = defineEmits(['guardar-anotaciones', 'posicion', 'visto'])
+let vistoAvisado = false
 
 const marcasComentario = computed(() =>
   props.comentarios.filter(c => c.segundo !== null && c.segundo !== undefined))
@@ -257,8 +259,18 @@ const alAvanzar = () => {
     }
   }
   ultimaPosicion = pos
+  // Se cuenta como visto con 3 segundos reproducidos (o la mitad, si el clip es más corto)
+  if (!vistoAvisado && !v.paused && pos >= Math.min(3, duracion.value / 2)) {
+    vistoAvisado = true
+    emit('visto')
+  }
   if (v.currentTime >= fuente.value.fin) {
-    if (repetir.value) { v.currentTime = fuente.value.inicio; ultimaPosicion = -1 } else v.pause()
+    if (repetir.value) {
+      v.currentTime = fuente.value.inicio
+      ultimaPosicion = -1
+    } else {
+      v.pause()
+    }
   }
 }
 
@@ -343,6 +355,7 @@ const borrarDibujo = (anotacion) => {
 // Al cambiar de clip, vuelve a la cámara principal y al principio
 watch(() => [props.url, props.urlHls, props.inicio], () => {
   anguloActivo.value = 0
+  vistoAvisado = false
   actual.value = props.inicio
   posicionPendiente = 0
   ultimaPosicion = 0

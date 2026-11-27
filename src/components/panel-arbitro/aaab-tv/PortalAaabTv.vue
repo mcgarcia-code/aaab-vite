@@ -14,6 +14,9 @@
                   <option v-if="!modoAdmin" value="mis-clips">Mis clips (donde aparezco)</option>
                   <option v-if="puedePublicar" value="publicados">Publicados por mí</option>
                 </optgroup>
+                <optgroup v-if="partidos.length" label="Partidos">
+                  <option v-for="p in partidos" :key="p.clave" :value="p.clave">{{ p.nombre }} ({{ fechaArg(p.fecha) }})</option>
+                </optgroup>
                 <optgroup v-if="coleccionesBase.length" label="Colecciones oficiales">
                   <option v-for="c in coleccionesBase" :key="c.id" :value="`c-${c.id}`">{{ c.nombre }}</option>
                 </optgroup>
@@ -27,6 +30,25 @@
               </div>
               <BotonHerramienta tipo="nuevo" :texto="puedePublicar ? 'Analizar y publicar' : 'Analizar un partido'" icono="bi-camera-reels" :solo-icono-en-celular="false" @click="emit('ir-estudio')" />
             </div>
+
+            <!-- ============ VISTA PARTIDO: todos los clips del partido sobre su línea de tiempo ============ -->
+            <section v-if="partidoActivo && clipsFiltrados.length" class="linea-partido mb-3" aria-label="Clips del partido en el tiempo">
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small text-muted">
+                <i class="bi bi-trophy" aria-hidden="true"></i>
+                <strong class="text-body">{{ partidoActivo.nombre }}</strong> · {{ fechaArg(partidoActivo.fecha) }}
+                · {{ clipsFiltrados.length }} {{ clipsFiltrados.length === 1 ? 'clip' : 'clips' }}
+                <span v-if="hayVariosVideos" class="w-100">
+                  <i class="bi bi-info-circle" aria-hidden="true"></i> Hay clips de más de un video (por ejemplo, cada tiempo por separado): sus minutos son de su propio video.
+                </span>
+              </div>
+              <div class="pista-partido">
+                <span v-for="m in marcasPartido" :key="m" class="marca-partido" :style="{ left: porcentajePartido(m) + '%' }">{{ formatearTiempo(m) }}</span>
+                <button v-for="c in clipsFiltrados" :key="c.id" type="button" class="punto-partido"
+                        :style="{ left: porcentajePartido((c.inicio + c.fin) / 2) + '%', background: colorTag(c.color).solido }"
+                        :title="`${formatearTiempo((c.inicio + c.fin) / 2)} · ${c.titulo}`"
+                        :aria-label="`Ver ${c.titulo}, minuto ${formatearTiempo((c.inicio + c.fin) / 2)}`" @click="clipAbierto = c"></button>
+              </div>
+            </section>
 
             <!-- Qué es lo que se está mirando -->
             <div v-if="listaActiva || coleccionActiva || vistaActiva === 'mis-clips' || vistaActiva === 'publicados'"
@@ -73,6 +95,7 @@
                         :class="ESTADOS_DESTINO[estadoEnVista(c)].clase">
                     <i :class="['bi', ESTADOS_DESTINO[estadoEnVista(c)].icono]" aria-hidden="true"></i> {{ ESTADOS_DESTINO[estadoEnVista(c)].etiqueta }}
                   </span>
+                  <span v-if="c.vistoPorMi" class="visto"><i class="bi bi-check2" aria-hidden="true"></i> Visto</span>
                   <span class="duracion">{{ formatearTiempo(c.fin - c.inicio) }}</span>
                 </div>
                 <div class="p-3 text-start">
@@ -91,8 +114,9 @@
     <ModalBase :show="!!clipAbierto" :titulo="clipAbierto?.titulo" icono="bi-play-btn" color-icono="bg-danger-subtle text-danger"
                max-width="860px" @close="clipAbierto = null">
       <template v-if="clipAbierto">
-        <ReproductorClip ref="reproductor" v-bind="tramoDe(clipAbierto)" :comentarios="comentariosClip" @posicion="p => posicionClip = p" :anotaciones="clipAbierto.anotaciones || []" :puede-anotar="modoAdmin || esPropio(clipAbierto)"
-                         :guardando="guardandoDibujo" @guardar-anotaciones="guardarDibujos" />
+        <ReproductorClip ref="reproductor" v-bind="tramoDe(clipAbierto)" :comentarios="comentariosClip" :anotaciones="clipAbierto.anotaciones || []"
+                         :puede-anotar="modoAdmin || esPropio(clipAbierto)" :guardando="guardandoDibujo"
+                         @posicion="p => posicionClip = p" @guardar-anotaciones="guardarDibujos" @visto="registrarVista(clipAbierto.id)" />
         <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
           <span class="badge-tag" :style="{ background: colorTag(clipAbierto.color).solido }">{{ clipAbierto.etiqueta }}</span>
           <span v-if="DECISIONES[clipAbierto.decision]" class="estado-pill" :class="DECISIONES[clipAbierto.decision].clase">
@@ -123,6 +147,18 @@
         <p v-if="esPropio(clipAbierto) && clipAbierto.destinos.some(d => d.estado === 'pendiente')" class="small text-muted mt-1 mb-0">
           <i class="bi bi-info-circle" aria-hidden="true"></i> Los canales pendientes los revisa el coordinador general: hasta entonces ahí solo lo ves vos.
         </p>
+
+        <!-- Compartir, ver el partido completo y (coordinador general) quién lo vio -->
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <button type="button" class="btn btn-sm btn-light border fw-bold" @click="compartirClip(clipAbierto)">
+            <i class="bi bi-link-45deg" aria-hidden="true"></i> Copiar enlace
+          </button>
+          <button v-if="clipAbierto.partido && claveDePartido(clipAbierto) !== vistaActiva" type="button" class="btn btn-sm btn-light border fw-bold"
+                  @click="verPartido(clipAbierto)">
+            <i class="bi bi-trophy" aria-hidden="true"></i> Ver todos los clips del partido
+          </button>
+          <VistasClip v-if="modoAdmin" :id-clip="clipAbierto.id" :cantidad="clipAbierto.cantidadVistas || 0" />
+        </div>
 
         <!-- Guardar en mis listas de reproducción -->
         <div class="mt-3">
@@ -162,7 +198,9 @@
 
 <script setup>
 import { ref, computed, inject, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ModalBase from '@/components/ModalBase.vue'
+import VistasClip from '@/components/panel-arbitro/aaab-tv/VistasClip.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
@@ -187,10 +225,12 @@ const emit = defineEmits(['ir-estudio'])
 
 const notificar = inject('notificar')
 const toast = inject('toast')
+const route = useRoute()
+const router = useRouter()
 const {
   clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales,
   clipsModeracion, cargandoModeracion, cargarClipsModeracion, gruposPublicacion, cargarGruposPublicacion,
-  borrarClipPublicado, puedePublicar, tramoDe, guardarAnotaciones,
+  borrarClipPublicado, puedePublicar, tramoDe, guardarAnotaciones, registrarVista,
   listasReproduccion, cargarListasReproduccion, crearListaReproduccion, borrarListaReproduccion, cambiarClipEnLista,
   colecciones, cargarColecciones, coleccionesAdmin, cargarColeccionesAdmin
 } = useAaabTv()
@@ -213,7 +253,38 @@ onMounted(async () => {
   }
   const res = await (props.modoAdmin ? cargarClipsModeracion() : cargarClips())
   errorClips.value = res?.ok ? '' : (res?.message || 'Intentá de nuevo en un rato.')
+  abrirClipDelEnlace()
 })
+
+// ─── Enlace directo a un clip (?clip=<id>) ───────────────────
+// Al entrar con el enlace se abre ese clip; mientras está abierto, el enlace queda en la URL
+const RUTA_PORTAL = '/panel-arbitro/aaab-tv'
+const abrirClipDelEnlace = () => {
+  const id = route.query.clip
+  if (!id) return
+  const clip = clipsBase.value.find(c => String(c.id) === String(id))
+  if (clip) clipAbierto.value = clip
+  else toast({ tipo: 'warning', titulo: 'Clip no disponible', mensaje: 'El clip del enlace no existe o no está en tus canales.' })
+}
+
+const compartirClip = async (clip) => {
+  const enlace = `${window.location.origin}${RUTA_PORTAL}?clip=${encodeURIComponent(clip.id)}`
+  // En el celular se abre el menú de compartir (WhatsApp, etc.); si no, se copia
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: clip.titulo, text: `AAAB TV: ${clip.titulo}`, url: enlace })
+      return
+    } catch (e) {
+      if (e?.name === 'AbortError') return
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(enlace)
+    toast({ tipo: 'success', titulo: 'Enlace copiado', mensaje: 'Lo puede abrir quien tenga acceso a ese clip.' })
+  } catch {
+    toast({ tipo: 'warning', titulo: 'No se pudo copiar', mensaje: enlace })
+  }
+}
 
 // Autor = mismo id y mismo tipo de usuario (un árbitro y una autoridad pueden compartir id)
 const esPropio = (clip) => !!clip && esUsuarioActual(clip.idAutor, clip.tipoAutor)
@@ -246,6 +317,39 @@ const coleccionActiva = computed(() =>
   coleccionesBase.value.find(c => `c-${c.id}` === vistaActiva.value) || null)
 const esVistaDeCanal = computed(() => vistaActiva.value === 'publico' || vistaActiva.value.startsWith('g-'))
 
+// ─── Partidos: todos los clips de un partido (los del análisis), ordenados en el tiempo ───
+const MAXIMO_PARTIDOS = 40
+const claveDePartido = (clip) => `p-${clip.fecha}|${clip.partido}`
+// Lo que se puede ver del partido: el coordinador general, todo; el resto, lo autorizado y lo propio
+const visibleEnPartido = (c) => props.modoAdmin || esPropio(c) || autorizadoEnAlguno(c)
+const partidos = computed(() => {
+  const mapa = new Map()
+  clipsBase.value
+    .filter(c => c.partido && c.origen !== 'externo' && visibleEnPartido(c))
+    .forEach(c => {
+      const clave = claveDePartido(c)
+      if (!mapa.has(clave)) mapa.set(clave, { clave, nombre: c.partido, fecha: c.fecha })
+    })
+  return [...mapa.values()].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha))).slice(0, MAXIMO_PARTIDOS)
+})
+const partidoActivo = computed(() => partidos.value.find(p => p.clave === vistaActiva.value) || null)
+const verPartido = (clip) => {
+  vistaActiva.value = claveDePartido(clip)
+  clipAbierto.value = null
+}
+
+// Línea de tiempo del partido: de 0 al último clip, con una marca cada tanto
+const finPartido = computed(() => Math.max(60, ...clipsFiltrados.value.map(c => c.fin)))
+const porcentajePartido = (segundo) => Math.min(100, Math.max(0, (segundo / finPartido.value) * 100))
+const marcasPartido = computed(() => {
+  const paso = [300, 600, 900, 1200].find(p => finPartido.value / p <= 8) || 1800
+  const marcas = []
+  for (let s = 0; s <= finPartido.value; s += paso) marcas.push(s)
+  return marcas
+})
+// Si los clips vienen de videos distintos (por ejemplo, cada tiempo cargado aparte), se avisa
+const hayVariosVideos = computed(() => new Set(clipsFiltrados.value.map(c => c.idEvento || c.idVideo).filter(Boolean)).size > 1)
+
 const estaEnLista = (lista, clip) => lista.idsClips.some(id => String(id) === String(clip.id))
 const destinoEnVista = (clip) => clip.destinos.find(d => claveCanal(d.idGrupo) === vistaActiva.value)
 // Estado del clip en el canal que se mira (fuera de un canal no se muestra)
@@ -263,6 +367,12 @@ const clipsDeVista = computed(() => {
     const canal = claveCanal(coleccionActiva.value.idGrupo)
     return enOrden(coleccionActiva.value.idsClips).filter(c =>
       c.destinos.some(d => claveCanal(d.idGrupo) === canal && d.estado === 'autorizado'))
+  }
+  // En un partido: sus clips del análisis, en el orden en que pasaron
+  if (partidoActivo.value) {
+    return clipsBase.value
+      .filter(c => claveDePartido(c) === partidoActivo.value.clave && c.origen !== 'externo' && visibleEnPartido(c))
+      .sort((a, b) => a.inicio - b.inicio)
   }
   if (vistaActiva.value === 'mis-clips') return clipsBase.value.filter(c => estaInvolucrado(c) && autorizadoEnAlguno(c))
   if (vistaActiva.value === 'publicados') return clipsBase.value.filter(esPropio)
@@ -290,7 +400,15 @@ const mensajeVacio = computed(() => {
   if (coleccionActiva.value) return 'Esta colección todavía no tiene clips.'
   if (vistaActiva.value === 'mis-clips') return 'Todavía no hay clips autorizados donde te hayan marcado como árbitro involucrado.'
   if (vistaActiva.value === 'publicados') return 'Todavía no publicaste clips.'
+  if (partidoActivo.value) return 'No hay clips de este partido para ver.'
   return 'Todavía no hay clips en este canal.'
+})
+
+// Mientras un clip está abierto, su enlace queda en la URL (?clip=<id>); al cerrarlo se saca
+watch(clipAbierto, (clip) => {
+  const { clip: actual, ...resto } = route.query
+  if (clip && String(actual) !== String(clip.id)) router.replace({ query: { ...route.query, clip: clip.id } })
+  else if (!clip && actual) router.replace({ query: resto })
 })
 
 // Paginación de la grilla (vuelve a la primera página al cambiar de vista o de filtro)
@@ -463,6 +581,50 @@ const confirmarBorrado = () => {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #7f1d1d 140%);
 }
 .imagen-miniatura { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.visto {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(22, 163, 74, 0.9);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+/* Vista Partido: los clips como puntos sobre el tiempo del partido */
+.linea-partido {
+  padding: 10px 12px;
+  border: 1px solid var(--o-borde, #e2e8f0);
+  border-radius: 12px;
+}
+.pista-partido {
+  position: relative;
+  height: 44px;
+  margin: 0 8px;
+  border-bottom: 2px solid var(--o-borde, #cbd5e1);
+}
+.marca-partido {
+  position: absolute;
+  bottom: -18px;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: var(--o-texto-suave, #64748b);
+  font-variant-numeric: tabular-nums;
+}
+.punto-partido {
+  position: absolute;
+  bottom: 8px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  padding: 0;
+  border: 2px solid var(--o-tarjeta, #fff);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.3);
+}
+.punto-partido:hover, .punto-partido:focus-visible { transform: scale(1.25); outline: 2px solid var(--o-texto, #0f172a); outline-offset: 1px; }
+.linea-partido + * { margin-top: 26px; }
 .icono-play {
   position: absolute;
   top: 50%;

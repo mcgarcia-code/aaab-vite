@@ -93,6 +93,18 @@
           <p v-if="porArbitro.length" class="small text-muted mt-1">Correctas / incorrectas / a revisar. Los 15 árbitros con más clips.</p>
         </section>
 
+        <section class="col-12 col-lg-6">
+          <h3 class="titulo-grafico">Clips más vistos</h3>
+          <p v-if="!masVistos.length" class="small text-muted">Todavía no hay vistas registradas en el período.</p>
+          <div v-else class="barras">
+            <div v-for="c in masVistos" :key="c.id" class="fila-barra" :title="`${c.titulo}: ${c.cantidadVistas} ${c.cantidadVistas === 1 ? 'vista' : 'vistas'}`">
+              <span class="nombre text-truncate">{{ c.titulo }}</span>
+              <span class="pista"><span class="barra" :style="{ width: (c.cantidadVistas / maximoVistas) * 100 + '%' }"></span></span>
+              <span class="numero">{{ c.cantidadVistas }}</span>
+            </div>
+          </div>
+        </section>
+
         <section class="col-12 col-lg-5">
           <h3 class="titulo-grafico">Quién publica</h3>
           <div class="barras">
@@ -202,6 +214,13 @@ const porArbitro = computed(() => {
   return [...mapa.values()].sort((a, b) => b.total - a.total).slice(0, MAXIMO_ARBITROS)
 })
 const maximoArbitro = computed(() => Math.max(1, ...porArbitro.value.map(a => a.total)))
+
+// Los 10 clips con más vistas (cada persona cuenta una vez por clip)
+const masVistos = computed(() => clipsDelPeriodo.value
+  .filter(c => c.cantidadVistas > 0)
+  .sort((a, b) => b.cantidadVistas - a.cantidadVistas)
+  .slice(0, 10))
+const maximoVistas = computed(() => Math.max(1, ...masVistos.value.map(c => c.cantidadVistas)))
 
 const ancho = (cantidad, lista) => `${(cantidad / Math.max(1, ...lista.map(f => f.cantidad))) * 100}%`
 </script>

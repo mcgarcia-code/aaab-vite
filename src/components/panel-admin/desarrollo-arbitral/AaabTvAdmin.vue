@@ -159,6 +159,9 @@
           </div>
         </form>
 
+        <!-- Quién vio el clip -->
+        <VistasClip :id-clip="editando.id" :cantidad="editando.cantidadVistas || 0" class="mt-3" />
+
         <ComentariosClip :id-clip="editando.id" moderar :posicion-actual="posicionClip"
                          @ir-a="s => reproductor?.irA(s)" @cambiaron="l => comentariosClip = l" />
       </template>
@@ -184,6 +187,7 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'
 import ComentariosClip from '@/components/panel-arbitro/aaab-tv/ComentariosClip.vue'
+import VistasClip from '@/components/panel-arbitro/aaab-tv/VistasClip.vue'
 import EstudioAaabTv from '@/components/panel-arbitro/aaab-tv/EstudioAaabTv.vue'
 import PortalAaabTv from '@/components/panel-arbitro/aaab-tv/PortalAaabTv.vue'
 import ColeccionesAaabTv from '@/components/panel-admin/desarrollo-arbitral/ColeccionesAaabTv.vue'

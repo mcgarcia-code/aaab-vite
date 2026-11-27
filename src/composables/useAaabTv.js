@@ -249,6 +249,8 @@ const vistasUsadas = { portal: false, moderacion: false }
 
 // Videos locales de esta sesión (maqueta: el video no se sube): id del clip → URL del archivo
 const videosDeSesion = reactive({})
+// Clips cuya vista ya se registró en esta pestaña (para no mandarla de nuevo cada vez que se abre)
+const vistasRegistradas = new Set()
 // Subida del video al publicar: null = no hay subida; 0..1 = fracción subida
 const progresoSubida = ref(null)
 
@@ -701,8 +703,26 @@ export function useAaabTv() {
   // El coordinador general comenta desde la moderación; los demás desde el portal
   const listarComentarios = (idClip) => repoClips.listarComentarios(idClip)
   // segundo: momento del clip al que se refiere el comentario (null = el clip en general)
-  const agregarComentario = (idClip, texto, segundo = null) => repoClips.agregarComentario(idClip, texto.trim(), segundo)
+  // idPadre: comentario al que responde (null = comentario nuevo)
+  const agregarComentario = (idClip, texto, segundo = null, idPadre = null) =>
+    repoClips.agregarComentario(idClip, texto.trim(), segundo, idPadre)
   const borrarComentario = (id) => repoClips.borrarComentario(id)
+
+  // ─── Vistas (quién vio cada clip) ─────────────────────────
+  // Se registra una vez por clip en esta pestaña, cuando el reproductor avisa que se vio
+  const registrarVista = async (idClip) => {
+    if (vistasRegistradas.has(String(idClip))) return
+    vistasRegistradas.add(String(idClip))
+    const res = await repoClips.registrarVista(idClip)
+    if (!res?.ok) {
+      vistasRegistradas.delete(String(idClip))
+      return
+    }
+    for (const vista of [clipsVisibles, clipsModeracion]) {
+      vista.value = vista.value.map(c => (String(c.id) === String(idClip) ? { ...c, vistoPorMi: true } : c))
+    }
+  }
+  const listarVistas = (idClip) => repoClips.listarVistas(idClip)
 
   // ─── Listas de reproducción (de cada usuario) ─────────────
   const crearListaReproduccion = async (nombre) => {
@@ -735,7 +755,7 @@ export function useAaabTv() {
     gruposPublicacion, cargarGruposPublicacion, publicarClips, publicarVideoExterno, progresoSubida, borrarClipPublicado,
     puedePublicar, publicaAutorizado, clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales, tramoDe,
     clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip, guardarAnotaciones,
-    listarComentarios, agregarComentario, borrarComentario,
+    listarComentarios, agregarComentario, borrarComentario, registrarVista, listarVistas,
     listasReproduccion, cargarListasReproduccion, crearListaReproduccion, borrarListaReproduccion, cambiarClipEnLista,
     colecciones, cargarColecciones, coleccionesAdmin, cargarColeccionesAdmin, guardarColeccion, borrarColeccion
   }

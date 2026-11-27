@@ -33,9 +33,13 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   POST cambiarEstadoDestino { id, idGrupo, estado }             → clip actualizado
 //   POST guardarAnotaciones  { idClip, anotaciones }              → clip actualizado (el autor o el coordinador general)
 //   GET  listarComentarios   { idClip }                           → [comentario]
-//   POST agregarComentario   { idClip, texto, segundo }           → comentario (solo rol 2 y 4, coordinador general y admin)
+//   POST agregarComentario   { idClip, texto, segundo, idPadre }  → comentario (solo rol 2 y 4, coordinador general y admin)
 //                                                                   segundo: momento del clip al que se refiere, o null
-//   POST borrarComentario    { id }                               → true (el autor, o el coordinador general)
+//                                                                   idPadre: comentario al que responde, o null (un solo nivel)
+//   POST borrarComentario    { id }                               → true (el autor, o el coordinador general; borra sus respuestas)
+//   POST registrarVista      { idClip }                           → true (una por usuario y clip: actualiza la fecha si ya existía)
+//   GET  listarVistas        { idClip }                           → [{ idUsuario, tipoUsuario, nombre, vistoEl }] (coordinador general)
+//   listarClips devuelve en cada clip vistoPorMi (bool); listarClipsAdmin, cantidadVistas (número)
 //   GET  listarListas        {}                                   → [{ id, nombre, idsClips }] del usuario
 //   POST guardarLista        { id?, nombre }                      → lista (alta o cambio de nombre)
 //   POST borrarLista         { id }                               → true
@@ -67,7 +71,7 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   estado de cada destino: 'pendiente' | 'autorizado' | 'no_autorizado'
 //   anotación (dibujo sobre el video): { id, segundo, formas: [{ tipo: 'flecha'|'linea'|'circulo'|'libre', color, puntos: [[x, y]] }] }
 //     segundo: dentro del clip (desde su inicio); x e y entre 0 y 1 (proporción del cuadro)
-// Comentario: { id, idClip, idAutor, tipoAutor, autor, esCoordinacion, texto, segundo, creadoEl } (segundo: del clip, o null)
+// Comentario: { id, idClip, idPadre, idAutor, tipoAutor, autor, esCoordinacion, texto, segundo, creadoEl } (segundo: del clip, o null)
 // Colección: { id, nombre, descripcion, idGrupo, nombreCanal, idsClips, actualizadoEl }
 // =====================================================================
 
@@ -217,8 +221,11 @@ const conServidor = {
   guardarAnotaciones: (idClip, anotaciones) => enviar('guardarAnotaciones', { idClip, anotaciones }),
 
   listarComentarios: async (idClip) => comoLista(await pedir('listarComentarios', { idClip })),
-  agregarComentario: (idClip, texto, segundo = null) => enviar('agregarComentario', { idClip, texto, segundo }),
+  agregarComentario: (idClip, texto, segundo = null, idPadre = null) => enviar('agregarComentario', { idClip, texto, segundo, idPadre }),
   borrarComentario: (id) => enviar('borrarComentario', { id }),
+
+  registrarVista: (idClip) => enviar('registrarVista', { idClip }),
+  listarVistas: async (idClip) => comoLista(await pedir('listarVistas', { idClip })),
 
   listarListas: async () => comoLista(await pedir('listarListas')),
   guardarLista: ({ id, nombre }) => enviar('guardarLista', { id: id ?? null, nombre }),
@@ -273,6 +280,7 @@ const conServidor = {
 const CLAVE_CLIPS = 'aaabTv.clips'
 const CLAVE_COMENTARIOS = 'aaabTv.comentarios'
 const CLAVE_COLECCIONES = 'aaabTv.colecciones'
+const CLAVE_VISTAS = 'aaabTv.vistas'
 const publico = (estado) => [{ idGrupo: null, nombre: NOMBRE_CANAL_PUBLICO, estado }]
 const CLIPS_EJEMPLO = [
   {
@@ -401,6 +409,10 @@ const enNavegador = (clavePanel, claveListas) => {
 
   const leerColecciones = () => leer(CLAVE_COLECCIONES, [])
 
+  // Vistas: { idClip: [{ idUsuario, tipoUsuario, nombre, vistoEl }] } (una por usuario y clip)
+  const leerVistas = () => leer(CLAVE_VISTAS, {})
+  const vioElClip = (vistas, idClip) => (vistas[idClip] || []).some(v => esUsuarioActual(v.idUsuario, v.tipoUsuario))
+
   return {
     obtenerPanel: async () => ({ ok: true, payload: leer(clavePanel(), null) }),
     guardarPanel: async (botones) => (escribir(clavePanel(), botones) ? { ok: true, payload: botones } : sinEspacio),
@@ -412,13 +424,22 @@ const enNavegador = (clavePanel, claveListas) => {
     },
     listarGruposPublicacion: listarGruposMaqueta,
 
-    listarClips: async () => ({ ok: true, payload: leerClips().filter(veClip) }),
+    listarClips: async () => {
+      const vistas = leerVistas()
+      return { ok: true, payload: leerClips().filter(veClip).map(c => ({ ...c, vistoPorMi: vioElClip(vistas, c.id) })) }
+    },
     borrarClip: async (id) => {
       escribir(CLAVE_CLIPS, leerClips().filter(c => c.id !== id))
       return { ok: true, payload: true }
     },
 
-    listarClipsAdmin: async () => ({ ok: true, payload: leerClips() }),
+    listarClipsAdmin: async () => {
+      const vistas = leerVistas()
+      return {
+        ok: true,
+        payload: leerClips().map(c => ({ ...c, cantidadVistas: (vistas[c.id] || []).length, vistoPorMi: vioElClip(vistas, c.id) }))
+      }
+    },
     editarClip: async ({ id, titulo, descripcion, decision, arbitros, destinos }) => modificarClip(id, (clip) => {
       Object.assign(clip, { titulo, descripcion, decision: decision || null, arbitros: arbitros || [] })
       clip.destinos = clip.destinos.map(d => {
@@ -435,23 +456,37 @@ const enNavegador = (clavePanel, claveListas) => {
       ok: true,
       payload: leer(CLAVE_COMENTARIOS, []).filter(c => c.idClip === idClip)
     }),
-    agregarComentario: async (idClip, texto, segundo = null) => {
+    agregarComentario: async (idClip, texto, segundo = null, idPadre = null) => {
       const usuario = auth.getUser() || {}
       if (!esRolPublicador(usuario)) {
         return { ok: false, payload: null, message: 'Solo observadores, coordinadores y la coordinación general pueden comentar.' }
       }
       const comentario = {
-        id: nuevoId(), idClip, idAutor: usuario.id ?? null, tipoAutor: tipoUsuario(usuario), autor: nombreDe(usuario),
-        esCoordinacion: !!usuario.esAutoridad, texto, segundo, creadoEl: ahoraIso()
+        id: nuevoId(), idClip, idPadre, idAutor: usuario.id ?? null, tipoAutor: tipoUsuario(usuario), autor: nombreDe(usuario),
+        esCoordinacion: !!usuario.esAutoridad, texto, segundo: idPadre ? null : segundo, creadoEl: ahoraIso()
       }
       return escribir(CLAVE_COMENTARIOS, [...leer(CLAVE_COMENTARIOS, []), comentario])
         ? { ok: true, payload: comentario }
         : sinEspacio
     },
+    // Borra el comentario y sus respuestas
     borrarComentario: async (id) => {
-      escribir(CLAVE_COMENTARIOS, leer(CLAVE_COMENTARIOS, []).filter(c => c.id !== id))
+      escribir(CLAVE_COMENTARIOS, leer(CLAVE_COMENTARIOS, []).filter(c => c.id !== id && c.idPadre !== id))
       return { ok: true, payload: true }
     },
+
+    registrarVista: async (idClip) => {
+      const usuario = auth.getUser() || {}
+      const vistas = leerVistas()
+      const otras = (vistas[idClip] || []).filter(v => !esUsuarioActual(v.idUsuario, v.tipoUsuario))
+      vistas[idClip] = [...otras, { idUsuario: usuario.id ?? null, tipoUsuario: tipoUsuario(usuario), nombre: nombreDe(usuario), vistoEl: ahoraIso() }]
+      escribir(CLAVE_VISTAS, vistas)
+      return { ok: true, payload: true }
+    },
+    listarVistas: async (idClip) => ({
+      ok: true,
+      payload: [...(leerVistas()[idClip] || [])].sort((a, b) => String(b.vistoEl).localeCompare(String(a.vistoEl)))
+    }),
 
     listarListas: async () => ({ ok: true, payload: leerListas() }),
     guardarLista: async ({ id, nombre }) => {

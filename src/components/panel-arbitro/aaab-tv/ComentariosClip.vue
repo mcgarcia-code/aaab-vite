@@ -12,22 +12,59 @@
     <p v-else-if="!comentarios.length" class="small text-muted mb-2">Todavía no hay comentarios.</p>
 
     <ul v-else class="list-unstyled m-0 lista">
-      <li v-for="c in comentarios" :key="c.id" class="comentario" :class="{ coordinacion: c.esCoordinacion }">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-          <strong class="autor">{{ c.autor || 'Usuario' }}</strong>
-          <span v-if="c.esCoordinacion" class="badge-coordinacion">Coordinación</span>
-          <!-- Comentario sobre un momento del clip: lleva el video ahí -->
-          <button v-if="tieneMomento(c)" type="button" class="btn btn-sm momento-comentario"
-                  :aria-label="`Ir al ${formatearTiempo(c.segundo)} del clip`" @click="emit('ir-a', c.segundo)">
-            <i class="bi bi-play-fill" aria-hidden="true"></i> {{ formatearTiempo(c.segundo) }}
-          </button>
-          <span class="fecha">{{ fechaHora(c.creadoEl) }}</span>
-          <button v-if="puedeBorrar(c)" type="button" class="btn btn-link btn-sm text-danger p-0 ms-auto"
-                  :disabled="borrandoId === c.id" :aria-label="`Borrar el comentario de ${c.autor || 'usuario'}`" @click="borrar(c)">
-            <i class="bi bi-trash3" aria-hidden="true"></i>
+      <!-- Cada comentario con sus respuestas debajo (un solo nivel) -->
+      <li v-for="c in principales" :key="c.id" class="hilo">
+        <div class="comentario" :class="{ coordinacion: c.esCoordinacion }">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <strong class="autor">{{ c.autor || 'Usuario' }}</strong>
+            <span v-if="c.esCoordinacion" class="badge-coordinacion">Coordinación</span>
+            <!-- Comentario sobre un momento del clip: lleva el video ahí -->
+            <button v-if="tieneMomento(c)" type="button" class="btn btn-sm momento-comentario"
+                    :aria-label="`Ir al ${formatearTiempo(c.segundo)} del clip`" @click="emit('ir-a', c.segundo)">
+              <i class="bi bi-play-fill" aria-hidden="true"></i> {{ formatearTiempo(c.segundo) }}
+            </button>
+            <span class="fecha">{{ fechaHora(c.creadoEl) }}</span>
+            <button v-if="puedeBorrar(c)" type="button" class="btn btn-link btn-sm text-danger p-0 ms-auto"
+                    :disabled="borrandoId === c.id" :aria-label="`Borrar el comentario de ${c.autor || 'usuario'}`" @click="borrar(c)">
+              <i class="bi bi-trash3" aria-hidden="true"></i>
+            </button>
+          </div>
+          <p class="texto texto-pre-line">{{ c.texto }}</p>
+          <button v-if="puedeComentar && respondiendoA !== c.id" type="button" class="btn btn-link btn-sm p-0 mt-1 fw-bold responder"
+                  @click="abrirRespuesta(c)">
+            <i class="bi bi-reply" aria-hidden="true"></i> Responder
           </button>
         </div>
-        <p class="texto texto-pre-line">{{ c.texto }}</p>
+
+        <ul v-if="respuestasDe(c.id).length || respondiendoA === c.id" class="list-unstyled m-0 respuestas">
+          <li v-for="r in respuestasDe(c.id)" :key="r.id" class="comentario respuesta" :class="{ coordinacion: r.esCoordinacion }">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <strong class="autor">{{ r.autor || 'Usuario' }}</strong>
+              <span v-if="r.esCoordinacion" class="badge-coordinacion">Coordinación</span>
+              <span class="fecha">{{ fechaHora(r.creadoEl) }}</span>
+              <button v-if="puedeBorrar(r)" type="button" class="btn btn-link btn-sm text-danger p-0 ms-auto"
+                      :disabled="borrandoId === r.id" :aria-label="`Borrar la respuesta de ${r.autor || 'usuario'}`" @click="borrar(r)">
+                <i class="bi bi-trash3" aria-hidden="true"></i>
+              </button>
+            </div>
+            <p class="texto texto-pre-line">{{ r.texto }}</p>
+          </li>
+          <!-- Responder a este comentario -->
+          <li v-if="respondiendoA === c.id">
+            <form novalidate @submit.prevent="enviarRespuesta(c)">
+              <label :for="`respuesta-${c.id}`" class="visually-hidden">Responder a {{ c.autor || 'este comentario' }}</label>
+              <textarea :id="`respuesta-${c.id}`" v-model="textoRespuesta" rows="2" maxlength="1000" class="form-control form-control-sm"
+                        :class="{ 'is-invalid': intentoRespuesta && !textoRespuesta.trim() }" :placeholder="`Responder a ${c.autor || 'este comentario'}`"></textarea>
+              <div class="invalid-feedback">Escribí la respuesta.</div>
+              <div class="d-flex justify-content-end gap-2 mt-1">
+                <button type="button" class="btn btn-sm btn-light border" @click="respondiendoA = null">Cancelar</button>
+                <button type="submit" class="btn btn-sm btn-dark fw-bold" :disabled="enviando">
+                  <span v-if="enviando" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Responder
+                </button>
+              </div>
+            </form>
+          </li>
+        </ul>
       </li>
     </ul>
 
@@ -56,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, watch, inject } from 'vue'
+import { ref, computed, watch, inject } from 'vue'
 import { useAaabTv, formatearTiempo } from '@/composables/useAaabTv'
 import { esUsuarioActual, esRolPublicador } from '@/api/aaabTvClips'
 
@@ -81,6 +118,37 @@ const comentarios = ref([])
 watch(comentarios, (lista) => emit('cambiaron', lista))
 const enEsteMomento = ref(false)
 const tieneMomento = (c) => c.segundo !== null && c.segundo !== undefined
+
+// Hilos: los comentarios sin idPadre, cada uno con sus respuestas en orden
+const principales = computed(() => comentarios.value.filter(c => !c.idPadre))
+const respuestasDe = (id) => comentarios.value.filter(c => c.idPadre !== null && c.idPadre !== undefined && String(c.idPadre) === String(id))
+
+const respondiendoA = ref(null)
+const textoRespuesta = ref('')
+const intentoRespuesta = ref(false)
+
+const abrirRespuesta = (comentario) => {
+  respondiendoA.value = comentario.id
+  textoRespuesta.value = ''
+  intentoRespuesta.value = false
+}
+
+const enviarRespuesta = async (comentario) => {
+  intentoRespuesta.value = true
+  if (!textoRespuesta.value.trim() || enviando.value) return
+  enviando.value = true
+  try {
+    const res = await agregarComentario(props.idClip, textoRespuesta.value, null, comentario.id)
+    if (!res?.ok) {
+      toast({ tipo: 'danger', titulo: 'No se pudo responder', mensaje: res?.message || 'Intentá de nuevo.' })
+      return
+    }
+    comentarios.value = [...comentarios.value, res.payload]
+    respondiendoA.value = null
+  } finally {
+    enviando.value = false
+  }
+}
 const cargando = ref(false)
 const error = ref('')
 const texto = ref('')
@@ -139,7 +207,8 @@ const borrar = async (c) => {
       toast({ tipo: 'danger', titulo: 'No se pudo borrar', mensaje: res?.message || 'Intentá de nuevo.' })
       return
     }
-    comentarios.value = comentarios.value.filter(x => x.id !== c.id)
+    // Se van también sus respuestas
+    comentarios.value = comentarios.value.filter(x => x.id !== c.id && String(x.idPadre) !== String(c.id))
   } finally {
     borrandoId.value = null
   }
@@ -149,6 +218,7 @@ watch(() => props.idClip, () => {
   texto.value = ''
   intento.value = false
   enEsteMomento.value = false
+  respondiendoA.value = null
   cargar()
 }, { immediate: true })
 </script>
@@ -170,6 +240,16 @@ watch(() => props.idClip, () => {
 }
 .cantidad { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); }
 .lista { display: flex; flex-direction: column; gap: 8px; }
+.hilo { display: flex; flex-direction: column; gap: 6px; }
+.respuestas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: 18px;
+  padding-left: 10px;
+  border-left: 2px solid var(--o-borde, #e2e8f0);
+}
+.responder { font-size: 0.75rem; color: var(--o-texto-medio, #475569); text-decoration: none; }
 .comentario {
   padding: 8px 12px;
   border-radius: 12px;
@@ -177,6 +257,7 @@ watch(() => props.idClip, () => {
   border: 1px solid var(--o-borde, #e2e8f0);
 }
 .comentario.coordinacion { border-left: 4px solid #dc2626; }
+.comentario.respuesta { padding: 6px 10px; }
 .autor { font-size: 0.8rem; color: var(--o-texto, #0f172a); }
 .fecha { font-size: 0.75rem; color: var(--o-texto-suave, #64748b); }
 .badge-coordinacion {
