@@ -106,13 +106,14 @@
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { formatearTiempo } from '@/composables/useAaabTv'
 import LienzoDibujo from '@/components/panel-arbitro/aaab-tv/LienzoDibujo.vue'
+import { useCuadrosPorSegundo } from '@/composables/useCuadrosPorSegundo'
 
 // Reproduce el tramo [inicio, fin] de un video (o el clip ya cortado por el servidor, con inicio 0).
 // - urlHls: video adaptativo (la calidad baja sola si la conexión es mala); si no hay, se usa url (MP4)
 // - angulos: otras cámaras del mismo clip [{ nombre, url, urlHls, inicio, fin }]
 // - anotaciones: dibujos guardados [{ id, segundo, formas }] (segundo desde el inicio del clip); al llegar
 //   a cada uno, el video se pausa y lo muestra. puedeAnotar: el autor o el coordinador general los guardan
-// - Cuadro a cuadro: avanza o retrocede 1/30 de segundo (los navegadores no informan los cuadros por segundo)
+// - Cuadro a cuadro: avanza o retrocede un cuadro; los cuadros por segundo se detectan al reproducir (ver useCuadrosPorSegundo)
 const props = defineProps({
   url: { type: String, default: '' },
   urlHls: { type: String, default: '' },
@@ -127,7 +128,8 @@ const props = defineProps({
 const emit = defineEmits(['guardar-anotaciones'])
 
 const VELOCIDADES = [0.25, 0.5, 1]
-const CUADRO = 1 / 30
+// Cuadro a cuadro: se detectan los cuadros por segundo del video al reproducirlo (30 hasta saberlo)
+const { duracionCuadro, observar: observarCuadros } = useCuadrosPorSegundo()
 const HERRAMIENTAS = [
   { clave: 'flecha', nombre: 'Flecha', icono: 'bi-arrow-up-right' },
   { clave: 'linea', nombre: 'Línea', icono: 'bi-slash-lg' },
@@ -220,6 +222,7 @@ const moverA = (segundoRelativo) => {
 
 const alCargar = () => {
   videoRef.value.playbackRate = velocidad.value
+  observarCuadros(videoRef.value)
   moverA(posicionPendiente)
   if (posicionPendiente === 0) videoRef.value.play().catch(() => {})
   posicionPendiente = 0
@@ -274,7 +277,7 @@ const pasoCuadro = (sentido) => {
   if (!v) return
   v.pause()
   anotacionVisible.value = null
-  moverA(posicion.value + sentido * CUADRO)
+  moverA(posicion.value + sentido * duracionCuadro.value)
   ultimaPosicion = posicion.value
 }
 

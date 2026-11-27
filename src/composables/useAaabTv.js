@@ -129,6 +129,11 @@ const SESION_VACIA = () => ({
   reloj: { corriendo: false, acumulado: 0, desde: null, inicioReal: null },
   // Segundo del video en el que se inició el cronómetro (null = todavía no se sincronizó)
   sincronizacion: null,
+  // Cámaras extra del mismo partido (otro ángulo): [{ id, nombre, desfase, nombreArchivo }].
+  // desfase: segundo de esa cámara cuando la principal está en 0 (null = todavía no se sincronizó).
+  // Se guardan con el evento; el archivo no (es local): al reabrirlo se vuelve a elegir y la
+  // sincronización se conserva. Al publicar, cada clip lleva también esos ángulos
+  camaras: [],
   // Evento guardado del que viene esta sesión (null = todavía no se guardó)
   idEvento: null,
   // Huella de lo que se guardó o abrió por última vez: si la sesión cambió, hay cambios sin guardar
@@ -141,9 +146,14 @@ const sesion = reactive({ ...SESION_VACIA(), ...leer(claveStorage('sesion'), {})
 const video = reactive({ url: '', nombre: '', duracion: 0 })
 let archivoVideo = null
 
-// Cámaras extra del mismo partido (otro ángulo). desfase: segundo de esa cámara cuando la principal
-// está en 0 (null = todavía no se sincronizó). Al publicar, cada clip lleva también esos ángulos
-const camaras = ref([])
+// Archivos de las cámaras extra de esta sesión (no se guardan): id de la cámara → { url, archivo }
+const archivosCamara = reactive({})
+const soltarArchivosCamara = () => {
+  Object.keys(archivosCamara).forEach(id => {
+    URL.revokeObjectURL(archivosCamara[id].url)
+    delete archivosCamara[id]
+  })
+}
 
 // "Mis eventos": sesiones guardadas para retomarlas (ej. marcar en vivo hoy y cargar el video mañana).
 // Con servidor se ven desde cualquier dispositivo; sin servidor, en este navegador (ver api/aaabTvEventos.js)
@@ -154,7 +164,10 @@ const cargandoEventos = ref(false)
 watch(sesion, (v) => guardar(claveStorage('sesion'), v), { deep: true })
 
 const copiar = (valor) => JSON.parse(JSON.stringify(valor))
-const huellaDe = (s) => JSON.stringify({ partido: s.partido.trim(), fecha: s.fecha, tags: s.tags, sincronizacion: s.sincronizacion })
+const huellaDe = (s) => JSON.stringify({
+  partido: s.partido.trim(), fecha: s.fecha, tags: s.tags, sincronizacion: s.sincronizacion,
+  camaras: (s.camaras || []).map(c => ({ nombre: c.nombre, desfase: c.desfase }))
+})
 // Id de un evento nuevo: UUID (lo usa el servidor como clave), con respaldo si el navegador no lo tiene
 const nuevoIdEvento = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID() : nuevoId())
 
@@ -183,7 +196,7 @@ export const estadoGeneral = (clip) => {
 }
 
 // Clips, moderación, comentarios, listas y panel: con servidor o en este navegador (ver api/aaabTvClips.js)
-const repoClips = crearRepositorioClips(() => claveStorage('panel'), () => claveStorage('listas'), () => claveStorage('montajes'))
+const repoClips = crearRepositorioClips(() => claveStorage('panel'), () => claveStorage('listas'))
 
 // Guardado del panel: 'guardado' | 'guardando' | 'error' (si falla se avisa y se puede reintentar)
 const estadoPanel = ref('guardado')
@@ -231,8 +244,6 @@ const cargandoModeracion = ref(false)
 // Colecciones oficiales: las del portal (de los canales que ve) y todas, para el coordinador general
 const colecciones = ref([])
 const coleccionesAdmin = ref([])
-// Montajes del usuario (varios clips unidos en un video)
-const montajes = ref([])
 // Qué vistas se cargaron alguna vez (para recargar solo esas si cambian en otra pestaña)
 const vistasUsadas = { portal: false, moderacion: false }
 
@@ -264,7 +275,6 @@ const cargarGruposPublicacion = () => cargarEn(gruposPublicacion, null, repoClip
 const cargarListasReproduccion = () => cargarEn(listasReproduccion, null, repoClips.listarListas)
 const cargarColecciones = () => cargarEn(colecciones, null, repoClips.listarColecciones)
 const cargarColeccionesAdmin = () => cargarEn(coleccionesAdmin, null, repoClips.listarColeccionesAdmin)
-const cargarMontajes = () => cargarEn(montajes, null, repoClips.listarMontajes)
 
 // Reemplaza un clip actualizado en las vistas cargadas
 const actualizarEnVistas = (clip) => {
@@ -322,23 +332,28 @@ export function useAaabTv() {
   const archivoDelVideo = () => archivoVideo
 
   // ─── Cámaras extra ────────────────────────────────────────
+  // Le asigna (o vuelve a asignar, al reabrir un evento) el archivo de video a una cámara
+  const cargarArchivoCamara = (id, archivo) => {
+    if (archivosCamara[id]) URL.revokeObjectURL(archivosCamara[id].url)
+    archivosCamara[id] = { url: URL.createObjectURL(archivo), archivo: markRaw(archivo) }
+    const camara = sesion.camaras.find(c => c.id === id)
+    if (camara) camara.nombreArchivo = archivo.name
+  }
   const agregarCamara = (archivo) => {
-    camaras.value.push({
-      id: nuevoId(),
-      nombre: `Cámara ${camaras.value.length + 2}`,
-      url: URL.createObjectURL(archivo),
-      archivo: markRaw(archivo),
-      desfase: null
-    })
+    const id = nuevoId()
+    sesion.camaras.push({ id, nombre: `Cámara ${sesion.camaras.length + 2}`, desfase: null, nombreArchivo: archivo.name })
+    cargarArchivoCamara(id, archivo)
   }
   const quitarCamara = (id) => {
-    const camara = camaras.value.find(c => c.id === id)
-    if (camara) URL.revokeObjectURL(camara.url)
-    camaras.value = camaras.value.filter(c => c.id !== id)
+    if (archivosCamara[id]) URL.revokeObjectURL(archivosCamara[id].url)
+    delete archivosCamara[id]
+    sesion.camaras = sesion.camaras.filter(c => c.id !== id)
   }
+  // El archivo cargado de una cámara en esta sesión ({ url, archivo }), o null si falta elegirlo
+  const archivoCamara = (id) => archivosCamara[id] || null
   // segundoCamara: lo que muestra esa cámara en el mismo instante en que la principal está en segundoPrincipal
   const sincronizarCamara = (id, segundoCamara, segundoPrincipal) => {
-    const camara = camaras.value.find(c => c.id === id)
+    const camara = sesion.camaras.find(c => c.id === id)
     if (camara) camara.desfase = Math.round((segundoCamara - segundoPrincipal) * 10) / 10
   }
 
@@ -430,6 +445,7 @@ export function useAaabTv() {
   }
 
   const nuevaSesion = () => {
+    soltarArchivosCamara()
     Object.assign(sesion, SESION_VACIA())
     asegurarIntervalo()
   }
@@ -460,7 +476,8 @@ export function useAaabTv() {
       modo: sesion.modo,
       tags: copiar(sesion.tags),
       reloj: { acumulado: segundosReloj.value, inicioReal: sesion.reloj.inicioReal },
-      sincronizacion: sesion.sincronizacion
+      sincronizacion: sesion.sincronizacion,
+      camaras: copiar(sesion.camaras)
     }
     // La huella es la de lo que se manda (si se marca un tag mientras guarda, queda como cambio sin guardar)
     const huella = huellaDe(evento)
@@ -478,7 +495,10 @@ export function useAaabTv() {
     const res = await repoEventos.obtener(id)
     if (!res?.ok || !res.payload) return { ok: false, message: res?.message || 'No se pudo abrir el evento.' }
     const ev = res.payload
+    // Las cámaras vuelven con su nombre y su sincronización; los archivos se eligen de nuevo
+    soltarArchivosCamara()
     Object.assign(sesion, SESION_VACIA(), {
+      camaras: Array.isArray(ev.camaras) ? ev.camaras.map(c => ({ ...c })) : [],
       partido: ev.partido || '',
       fecha: ev.fecha || '',
       modo: ev.modo === 'vivo' ? 'vivo' : 'video',
@@ -511,8 +531,10 @@ export function useAaabTv() {
     if (!destinos?.length) return { ok: false, message: 'Elegí al menos un canal.' }
     progresoSubida.value = 0
     try {
-      // Solo las cámaras sincronizadas: sin desfase no se sabe qué tramo cortar
-      const camarasListas = camaras.value.filter(c => c.desfase !== null)
+      // Solo las cámaras sincronizadas y con su archivo elegido: sin eso no se sabe qué cortar
+      const camarasListas = sesion.camaras
+        .filter(c => c.desfase !== null && archivosCamara[c.id])
+        .map(c => ({ ...c, ...archivosCamara[c.id] }))
       const res = await repoClips.publicarClips({
         archivo: archivoVideo,
         camaras: camarasListas.map(c => ({ archivo: c.archivo, nombre: c.nombre, desfase: c.desfase })),
@@ -663,17 +685,6 @@ export function useAaabTv() {
     return res
   }
 
-  // ─── Montajes (varios clips unidos en un solo video) ──────
-  const crearMontaje = async (titulo, idsClips) => {
-    const res = await repoClips.crearMontaje({ titulo: titulo.trim(), idsClips })
-    if (res?.ok && res.payload?.id) montajes.value = [res.payload, ...montajes.value]
-    return res
-  }
-  const borrarMontaje = async (id) => {
-    const res = await repoClips.borrarMontaje(id)
-    if (res?.ok) montajes.value = montajes.value.filter(m => m.id !== id)
-    return res
-  }
 
   // ─── Comentarios de un clip ───────────────────────────────
   // El coordinador general comenta desde la moderación; los demás desde el portal
@@ -702,10 +713,10 @@ export function useAaabTv() {
   }
 
   return {
-    botones, sesion, video, camaras,
+    botones, sesion, video,
     segundosReloj, tagsOrdenados, tagsSinSincronizar,
     cargarPanel, agregarBoton, editarBoton, borrarBoton, restablecerBotones, estadoPanel, guardarPanelAhora,
-    cargarVideo, archivoDelVideo, agregarCamara, quitarCamara, sincronizarCamara,
+    cargarVideo, archivoDelVideo, agregarCamara, cargarArchivoCamara, archivoCamara, quitarCamara, sincronizarCamara,
     marcarTag, borrarTag, moverTag, ajustarTag,
     iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion,
     eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento,
@@ -714,7 +725,6 @@ export function useAaabTv() {
     clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip, guardarAnotaciones,
     listarComentarios, agregarComentario, borrarComentario,
     listasReproduccion, cargarListasReproduccion, crearListaReproduccion, borrarListaReproduccion, cambiarClipEnLista,
-    colecciones, cargarColecciones, coleccionesAdmin, cargarColeccionesAdmin, guardarColeccion, borrarColeccion,
-    montajes, cargarMontajes, crearMontaje, borrarMontaje
+    colecciones, cargarColecciones, coleccionesAdmin, cargarColeccionesAdmin, guardarColeccion, borrarColeccion
   }
 }

@@ -26,7 +26,10 @@
       </li>
     </ul>
 
-    <form class="mt-2" novalidate @submit.prevent="enviar">
+    <p v-if="!puedeComentar" class="small text-muted mt-2 mb-0">
+      <i class="bi bi-lock" aria-hidden="true"></i> Comentan observadores, coordinadores y la coordinación general.
+    </p>
+    <form v-else class="mt-2" novalidate @submit.prevent="enviar">
       <label :for="`comentario-${idClip}`" class="visually-hidden">Escribir un comentario</label>
       <textarea :id="`comentario-${idClip}`" v-model="texto" rows="2" maxlength="1000" class="form-control form-control-sm"
                 :class="{ 'is-invalid': intento && !texto.trim() }" placeholder="Escribí un comentario"></textarea>
@@ -44,10 +47,11 @@
 <script setup>
 import { ref, watch, inject } from 'vue'
 import { useAaabTv } from '@/composables/useAaabTv'
-import { esUsuarioActual } from '@/api/aaabTvClips'
+import { esUsuarioActual, esRolPublicador } from '@/api/aaabTvClips'
 
-// Comentarios de un clip. Los ve y escribe todo el que ve el clip; el coordinador general
-// (moderar = true) además puede borrar cualquiera. Cada uno puede borrar los suyos.
+// Comentarios de un clip. Los lee todo el que ve el clip; los escriben solo observadores,
+// coordinadores, el coordinador general y el admin (los mismos que publican). El coordinador
+// general (moderar = true) además puede borrar cualquiera. Cada uno puede borrar los suyos.
 const props = defineProps({
   idClip: { type: [String, Number], required: true },
   moderar: { type: Boolean, default: false }
@@ -69,6 +73,7 @@ const fechaHora = (iso) => {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
+const puedeComentar = esRolPublicador()
 // Autor = mismo id y mismo tipo de usuario (un árbitro y una autoridad pueden compartir id)
 const puedeBorrar = (c) => props.moderar || esUsuarioActual(c.idAutor, c.tipoAutor)
 

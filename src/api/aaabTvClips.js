@@ -4,7 +4,7 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 
 // =====================================================================
 // AAAB TV · panel de botones, canales, clips, autorización, comentarios, dibujos, listas,
-// colecciones oficiales, montajes y publicación.
+// colecciones oficiales y publicación. (Los montajes quedaron en pausa hasta definir cómo se quieren.)
 //
 // Igual que los eventos (api/aaabTvEventos.js), dos formas con las mismas funciones:
 // - Con servidor (VITE_AAAB_TV_SERVIDOR=true): los datos van al backend del hosting
@@ -33,7 +33,7 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   POST cambiarEstadoDestino { id, idGrupo, estado }             → clip actualizado
 //   POST guardarAnotaciones  { idClip, anotaciones }              → clip actualizado (el autor o el coordinador general)
 //   GET  listarComentarios   { idClip }                           → [comentario]
-//   POST agregarComentario   { idClip, texto }                    → comentario
+//   POST agregarComentario   { idClip, texto }                    → comentario (solo rol 2 y 4, coordinador general y admin)
 //   POST borrarComentario    { id }                               → true (el autor, o el coordinador general)
 //   GET  listarListas        {}                                   → [{ id, nombre, idsClips }] del usuario
 //   POST guardarLista        { id?, nombre }                      → lista (alta o cambio de nombre)
@@ -43,9 +43,6 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   GET  listarColeccionesAdmin {}                                → todas (coordinador general)
 //   POST guardarColeccion    { id?, nombre, descripcion, idGrupo, idsClips }  → colección (coordinador general)
 //   POST borrarColeccion     { id }                               → true (coordinador general)
-//   GET  listarMontajes      {}                                   → montajes del usuario
-//   POST crearMontaje        { titulo, idsClips }                 → montaje en 'procesando' (la VPS une los clips)
-//   POST borrarMontaje       { id }                               → true
 //   POST iniciarSubida       { nombre, tamanio, tipo, huella }    → { idVideo, urlVps, tokenSubida, tamanioParte, listo }
 //   POST publicarClips       { idVideo, partido, fecha, idEvento, destinos: [idGrupo|null],
 //                              camaras: [{ idVideo, nombre, desfase }],
@@ -56,7 +53,7 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   GET  listarGruposPublicacion {}                              → [{ idGrupo, nombre }] todos los grupos activos
 //                                                                   (rol 2 y 4, coordinador general y admin: para elegir dónde publicar)
 // Avisos (los genera el backend): al autor cuando se autoriza un canal de su clip y cuando le comentan el clip;
-// a los árbitros involucrados cuando un clip donde aparecen queda autorizado; al usuario cuando su montaje está listo
+// a los árbitros involucrados cuando un clip donde aparecen queda autorizado
 // Contrato con la VPS (entity 'videos', Authorization: Bearer <tokenSubida>):
 //   POST estadoSubida        { idVideo }                          → { partesRecibidas: [numero] }
 //   POST subirParte          FormData: idVideo, numero, parte     → { numero }
@@ -71,7 +68,6 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //     segundo: dentro del clip (desde su inicio); x e y entre 0 y 1 (proporción del cuadro)
 // Comentario: { id, idClip, idAutor, tipoAutor, autor, esCoordinacion, texto, creadoEl }
 // Colección: { id, nombre, descripcion, idGrupo, nombreCanal, idsClips, actualizadoEl }
-// Montaje: { id, titulo, idsClips, estado: 'procesando'|'listo'|'error', urlVideo, creadoEl }
 // =====================================================================
 
 const ENTIDAD = 'aaab_tv'
@@ -234,9 +230,6 @@ const conServidor = {
     enviar('guardarColeccion', { id: id ?? null, nombre, descripcion, idGrupo, idsClips }),
   borrarColeccion: (id) => enviar('borrarColeccion', { id }),
 
-  listarMontajes: async () => comoLista(await pedir('listarMontajes')),
-  crearMontaje: ({ titulo, idsClips }) => enviar('crearMontaje', { titulo, idsClips }),
-  borrarMontaje: (id) => enviar('borrarMontaje', { id }),
 
   // archivo: el video del evento (partido completo o un tiempo); camaras: [{ archivo, nombre, desfase }]
   publicarClips: async ({ archivo, camaras = [], partido, fecha, idEvento, destinos, clips, alProgresar }) => {
@@ -275,7 +268,7 @@ const conServidor = {
 // Los clips, comentarios y colecciones se comparten entre los usuarios de este navegador (así se puede
 // publicar con uno y autorizar con otro). El video local no se guarda: solo se ve en la sesión en la que
 // se publicó. Cada árbitro ve el canal público y el de su grupo (id_grupo de la sesión); el coordinador
-// ve todos. Los avisos los genera el backend (acá no hay) y los montajes no se arman (no hay videos).
+// ve todos. Los avisos los genera el backend (acá no hay).
 const CLAVE_CLIPS = 'aaabTv.clips'
 const CLAVE_COMENTARIOS = 'aaabTv.comentarios'
 const CLAVE_COLECCIONES = 'aaabTv.colecciones'
@@ -356,7 +349,7 @@ const nombreCanalDe = async (idGrupo) => {
   return grupos.payload.find(g => g.idGrupo === idGrupo)?.nombre || `Grupo ${idGrupo}`
 }
 
-const enNavegador = (clavePanel, claveListas, claveMontajes) => {
+const enNavegador = (clavePanel, claveListas) => {
   const leerClips = () => {
     const guardados = leer(CLAVE_CLIPS, null)
     if (!guardados) return CLIPS_EJEMPLO.map(c => ({ ...c, destinos: c.destinos.map(d => ({ ...d })) }))
@@ -443,6 +436,9 @@ const enNavegador = (clavePanel, claveListas, claveMontajes) => {
     }),
     agregarComentario: async (idClip, texto) => {
       const usuario = auth.getUser() || {}
+      if (!esRolPublicador(usuario)) {
+        return { ok: false, payload: null, message: 'Solo observadores, coordinadores y la coordinación general pueden comentar.' }
+      }
       const comentario = {
         id: nuevoId(), idClip, idAutor: usuario.id ?? null, tipoAutor: tipoUsuario(usuario), autor: nombreDe(usuario),
         esCoordinacion: !!usuario.esAutoridad, texto, creadoEl: ahoraIso()
@@ -494,19 +490,6 @@ const enNavegador = (clavePanel, claveListas, claveMontajes) => {
       return { ok: true, payload: true }
     },
 
-    // Montajes: en la maqueta no hay videos en el servidor, así que quedan con error explicado
-    listarMontajes: async () => ({ ok: true, payload: leer(claveMontajes(), []) }),
-    crearMontaje: async ({ titulo, idsClips }) => {
-      const montaje = {
-        id: nuevoId(), titulo, idsClips, estado: 'error', urlVideo: null, creadoEl: ahoraIso(),
-        error: 'En la maqueta no se arman montajes: los videos todavía no están en el servidor.'
-      }
-      return escribir(claveMontajes(), [montaje, ...leer(claveMontajes(), [])]) ? { ok: true, payload: montaje } : sinEspacio
-    },
-    borrarMontaje: async (id) => {
-      escribir(claveMontajes(), leer(claveMontajes(), []).filter(m => m.id !== id))
-      return { ok: true, payload: true }
-    },
 
     // En la maqueta no se sube nada: cada clip lleva inicio y fin dentro del video local
     publicarClips: async ({ partido, fecha, destinos, clips, alProgresar }) => {
@@ -540,6 +523,6 @@ const enNavegador = (clavePanel, claveListas, claveMontajes) => {
   }
 }
 
-// clavePanel / claveListas / claveMontajes: funciones que devuelven la clave de localStorage del usuario logueado
-export const crearRepositorioClips = (clavePanel, claveListas, claveMontajes) =>
-  AAAB_TV_CON_SERVIDOR ? conServidor : enNavegador(clavePanel, claveListas, claveMontajes)
+// clavePanel / claveListas: funciones que devuelven la clave de localStorage del usuario logueado
+export const crearRepositorioClips = (clavePanel, claveListas) =>
+  AAAB_TV_CON_SERVIDOR ? conServidor : enNavegador(clavePanel, claveListas)

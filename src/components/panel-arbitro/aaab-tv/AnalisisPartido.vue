@@ -181,15 +181,22 @@
         <section class="bloque">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <h3 class="titulo-bloque m-0">Marcar situación</h3>
-            <span class="small text-muted d-none d-md-inline">Video: <kbd class="tecla">Espacio</kbd> play/pausa · <kbd class="tecla">←</kbd><kbd class="tecla">→</kbd> 5 s · <kbd class="tecla">,</kbd><kbd class="tecla">.</kbd> cuadro</span>
+            <span class="small text-muted d-none d-md-inline">
+              <kbd class="tecla">1</kbd>–<kbd class="tecla">9</kbd> marcar ·
+              <kbd class="tecla">Espacio</kbd> play/pausa · <kbd class="tecla">←</kbd><kbd class="tecla">→</kbd> 5 s ·
+              <kbd class="tecla">,</kbd><kbd class="tecla">.</kbd> cuadro<template v-if="fpsDetectado"> ({{ cuadrosPorSegundo }} por segundo)</template>
+            </span>
           </div>
           <p v-if="motivoPadDeshabilitado" class="small text-muted mb-2"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ motivoPadDeshabilitado }}</p>
-          <!-- Celular y app: botones cuadrados, 3 por fila. Escritorio: botones anchos -->
+          <!-- Celular y app: botones cuadrados, 3 por fila. Escritorio: botones anchos.
+               Los primeros 9 se marcan también con las teclas 1 a 9 (en el orden de "Mi panel") -->
           <div v-if="botones.length" class="pad">
-            <button v-for="b in botones" :key="b.id" type="button" class="boton-tag"
+            <button v-for="(b, i) in botones" :key="b.id" type="button" class="boton-tag"
                     :class="{ destello: destelloId === b.id }" :disabled="!!motivoPadDeshabilitado"
                     :style="{ background: colorTag(b.color).fondo, color: colorTag(b.color).texto, borderColor: colorTag(b.color).solido }"
+                    :aria-keyshortcuts="i < 9 ? String(i + 1) : undefined"
                     @click="marcar(b)">
+              <span v-if="i < 9" class="atajo d-none d-md-inline-flex" aria-hidden="true">{{ i + 1 }}</span>
               <span class="nombre-tag" lang="es" :title="b.nombre">{{ conCortesDeSilaba(b.nombre) }}</span>
             </button>
           </div>
@@ -429,6 +436,7 @@ import {
   useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesDeTag, idGrupoDeClave, DECISIONES, AJUSTE_MINIMO, AJUSTE_MAXIMO
 } from '@/composables/useAaabTv'
 import { useRecorteClips } from '@/composables/useRecorteClips'
+import { useCuadrosPorSegundo } from '@/composables/useCuadrosPorSegundo'
 import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 import SelectorCanales from '@/components/panel-arbitro/aaab-tv/SelectorCanales.vue'
 import CamarasPartido from '@/components/panel-arbitro/aaab-tv/CamarasPartido.vue'
@@ -439,7 +447,7 @@ const toast = inject('toast')
 const notificar = inject('notificar')
 
 const {
-  botones, sesion, video, camaras, segundosReloj, tagsOrdenados, tagsSinSincronizar,
+  botones, sesion, video, archivoCamara, segundosReloj, tagsOrdenados, tagsSinSincronizar,
   cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag, ajustarTag, puedePublicar,
   iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips, progresoSubida, publicaAutorizado,
   eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento
@@ -448,8 +456,8 @@ const {
 const { recortando, progreso, recortar } = useRecorteClips()
 
 const VELOCIDADES = [0.5, 1, 2]
-// Cuadro a cuadro: 1/30 de segundo (los navegadores no informan los cuadros por segundo del video)
-const CUADRO = 1 / 30
+// Cuadro a cuadro: se detectan los cuadros por segundo del video mientras se reproduce (30 hasta saberlo)
+const { cuadrosPorSegundo, duracionCuadro, detectado: fpsDetectado, observar: observarCuadros } = useCuadrosPorSegundo()
 const CAMPOS_AJUSTE = [
   { clave: 'antes', nombre: 'Antes' },
   { clave: 'despues', nombre: 'Después' }
@@ -459,7 +467,8 @@ const CAMPOS_AJUSTE = [
 const ajustando = ref(null)
 // El navegador no pudo leer el video elegido (formato no compatible)
 const formatoNoCompatible = ref(false)
-const camarasSincronizadas = computed(() => camaras.value.filter(c => c.desfase !== null))
+// Las que se publican: sincronizadas y con su archivo elegido
+const camarasSincronizadas = computed(() => sesion.camaras.filter(c => c.desfase !== null && archivoCamara(c.id)))
 
 // Resumen del evento: cuántas veces se marcó cada situación, de más a menos
 const resumenEvento = computed(() => {
@@ -497,6 +506,7 @@ const alCargarMetadatos = () => {
   // Hay archivos que se abren pero el navegador no puede decodificar: sin duración ni imagen
   formatoNoCompatible.value = !video.duracion || !videoRef.value?.videoWidth
   if (videoRef.value) videoRef.value.playbackRate = velocidad.value
+  observarCuadros(videoRef.value)
 }
 
 const pasoCuadro = (sentido) => {
@@ -504,7 +514,7 @@ const pasoCuadro = (sentido) => {
   if (!v) return
   v.pause()
   finPrevia.value = null
-  v.currentTime = Math.min(Math.max(0, v.currentTime + sentido * CUADRO), v.duration || 0)
+  v.currentTime = Math.min(Math.max(0, v.currentTime + sentido * duracionCuadro.value), v.duration || 0)
 }
 
 const alAvanzarVideo = () => {
@@ -829,11 +839,21 @@ const publicar = async () => {
   }
 }
 
-// ─── Teclado: solo controles del video (los tags se marcan con los botones) ───
+// ─── Teclado: marcar (1 a 9) y controles del video ───
 const alPresionarTecla = (e) => {
   const destino = e.target
   if (mostrarPublicar.value || mostrarEventos.value || e.ctrlKey || e.metaKey || e.altKey) return
   if (destino.closest?.('input, textarea, select, [contenteditable="true"]')) return
+
+  // 1 a 9: marca el botón de "Mi panel" en esa posición (sin repetir si se deja apretada la tecla)
+  if (/^[1-9]$/.test(e.key) && !e.repeat) {
+    const boton = botones.value.at(Number(e.key) - 1)
+    if (boton && !motivoPadDeshabilitado.value) {
+      e.preventDefault()
+      marcar(boton)
+    }
+    return
+  }
 
   if (e.code === 'Space' && videoRef.value) {
     if (destino === videoRef.value) return
@@ -1023,6 +1043,7 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 .boton-tag {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1036,6 +1057,21 @@ onBeforeUnmount(() => {
   line-height: 1.15;
   text-align: center;
   transition: transform 0.1s ease, filter 0.15s ease;
+}
+/* Número de la tecla que marca ese botón (1 a 9) */
+.atajo {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.12);
+  font-size: 0.7rem;
+  font-weight: 800;
 }
 .nombre-tag {
   max-width: 100%;

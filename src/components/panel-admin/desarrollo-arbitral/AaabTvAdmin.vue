@@ -15,6 +15,9 @@
           <!-- ======================= ESTUDIO ======================= -->
           <EstudioAaabTv v-if="vista === 'estudio'" @publicado="alPublicar" />
 
+          <!-- ======================= AAAB TV: el portal completo, todos los canales ======================= -->
+          <PortalAaabTv v-else-if="vista === 'tv'" modo-admin @ir-estudio="irA('estudio')" />
+
           <!-- ======================= COLECCIONES OFICIALES ======================= -->
           <ColeccionesAaabTv v-else-if="vista === 'colecciones'" />
 
@@ -181,6 +184,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'
 import ComentariosClip from '@/components/panel-arbitro/aaab-tv/ComentariosClip.vue'
 import EstudioAaabTv from '@/components/panel-arbitro/aaab-tv/EstudioAaabTv.vue'
+import PortalAaabTv from '@/components/panel-arbitro/aaab-tv/PortalAaabTv.vue'
 import ColeccionesAaabTv from '@/components/panel-admin/desarrollo-arbitral/ColeccionesAaabTv.vue'
 import EstadisticasAaabTv from '@/components/panel-admin/desarrollo-arbitral/EstadisticasAaabTv.vue'
 import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
@@ -204,6 +208,7 @@ const {
 const CLIPS_POR_PAGINA = 15
 const DESCRIPCION_VISTA = {
   autorizar: 'Clips por autorizar',
+  tv: 'AAAB TV: todos los canales, todos los clips y tus listas',
   colecciones: 'Colecciones oficiales de cada canal',
   estadisticas: 'Estadísticas de AAAB TV',
   estudio: 'Analizá partidos y subí videos a AAAB TV'
@@ -216,15 +221,16 @@ const recargar = async () => {
 }
 onMounted(recargar)
 
-// ─── Pestañas: Autorizar / Colecciones / Estadísticas / Estudio (quedan en la URL: ?vista=...) ───
-// El coordinador general también analiza, arma su panel y sube videos, igual que en el panel árbitro
+// ─── Pestañas: Autorizar / AAAB TV / Colecciones / Estadísticas / Estudio (quedan en la URL: ?vista=...) ───
+// El coordinador general también ve el portal entero, analiza y sube videos
 const route = useRoute()
 const router = useRouter()
-const VISTAS = ['autorizar', 'colecciones', 'estadisticas', 'estudio']
+const VISTAS = ['autorizar', 'tv', 'colecciones', 'estadisticas', 'estudio']
 const vista = computed(() => (VISTAS.includes(route.query.vista) ? route.query.vista : 'autorizar'))
 const irA = (destino) => router.replace({ query: destino === 'autorizar' ? {} : { vista: destino } })
 const pestanas = computed(() => [
   { clave: 'autorizar', etiqueta: 'Autorizar', icono: 'bi-check2-square', cantidad: pendientes.value || null },
+  { clave: 'tv', etiqueta: 'AAAB TV', icono: 'bi-play-btn' },
   { clave: 'colecciones', etiqueta: 'Colecciones', icono: 'bi-bookmark-star' },
   { clave: 'estadisticas', etiqueta: 'Estadísticas', icono: 'bi-bar-chart' },
   { clave: 'estudio', etiqueta: 'Estudio', icono: 'bi-camera-reels' }
