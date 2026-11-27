@@ -154,7 +154,7 @@ let temporizadorPanel = null
 const SESION_VACIA = () => ({
   partido: '',
   fecha: new Date().toISOString().slice(0, 10),
-  modo: 'video',
+  modo: 'vivo',
   tags: [],
   // Reloj del modo en vivo (se guarda para no perderlo si se recarga la página).
   // inicioReal: hora (ms) del pitazo con el que se inició. Los tags se ubican con la hora real desde
