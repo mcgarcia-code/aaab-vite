@@ -29,7 +29,7 @@ import PortalAaabTv from '@/components/panel-arbitro/aaab-tv/PortalAaabTv.vue'
 import EstudioAaabTv from '@/components/panel-arbitro/aaab-tv/EstudioAaabTv.vue'
 import { useAaabTv } from '@/composables/useAaabTv'
 
-// AAAB TV en el panel árbitro: el portal de clips y el Estudio (Mi panel, Analizar, Subir video)
+// AAAB TV en el panel árbitro: el portal de clips y el Estudio (Mi panel, En vivo, Revisar evento, Subir video)
 useHead({ title: 'AAAB TV | AAAB' })
 
 const route = useRoute()

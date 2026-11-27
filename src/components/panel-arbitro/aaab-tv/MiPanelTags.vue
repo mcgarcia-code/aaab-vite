@@ -2,7 +2,7 @@
   <div>
     <p class="text-muted small mb-3">
       Elegí qué situaciones vas a marcar. Cada tag genera un clip de <strong>{{ VENTANA_SEGUNDOS }} segundos antes y {{ VENTANA_SEGUNDOS }} después</strong>;
-      en "Analizar" podés ajustar el inicio y el fin de cada clip.
+      en "Revisar evento" podés ajustar el inicio y el fin de cada clip.
     </p>
 
     <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">

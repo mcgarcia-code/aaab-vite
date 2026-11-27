@@ -1,15 +1,68 @@
 <template>
   <div>
-    <!-- Selector del video (fuera de los bloques: lo usan el marcado sobre video y la sincronización) -->
+    <!-- Selector del video (Revisar evento) -->
     <input ref="inputVideo" type="file" accept="video/*" class="d-none" aria-hidden="true" tabindex="-1" @change="elegirVideo">
 
+    <!-- ============ REVISAR: elegir el evento guardado ============ -->
+    <section v-if="vista === 'revisar' && (eligiendoEvento || !haySesion)" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
+        <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2">
+          <i class="bi bi-folder2-open text-danger fs-5" aria-hidden="true"></i> Elegí un evento
+        </h6>
+        <button v-if="haySesion" type="button" class="btn btn-sm btn-light border fw-bold" @click="eligiendoEvento = false">
+          <i class="bi bi-arrow-left" aria-hidden="true"></i> Volver al evento abierto
+        </button>
+      </div>
+      <p class="small text-muted mb-3">
+        Los partidos que marcaste en vivo y guardaste. Abrí uno, cargá el video y sincronizalo para ver, ajustar y publicar los clips.
+        <template v-if="AAAB_TV_CON_SERVIDOR">Los ves desde cualquier dispositivo en el que entres con tu usuario.</template>
+        <template v-else>Por ahora quedan guardados en este dispositivo.</template>
+      </p>
+
+      <EstadoCargando v-if="cargandoEventos && !eventos.length" texto="Cargando tus eventos" />
+
+      <div v-else-if="errorEventos" class="text-center py-3">
+        <p class="small text-danger fw-semibold mb-2">{{ errorEventos }}</p>
+        <button type="button" class="btn btn-sm btn-light border fw-bold" @click="recargarEventos">Reintentar</button>
+      </div>
+
+      <EstadoVacio v-else-if="!eventos.length" icono="bi-folder2" titulo="Todavía no guardaste eventos" mensaje="Marcá los tags en la pestaña En vivo y tocá “Guardar evento”." />
+
+      <ul v-else class="list-unstyled row g-2 m-0">
+        <li v-for="ev in eventos" :key="ev.id" class="col-12 col-md-6 col-xxl-4">
+          <div class="card card-body shadow-sm border-light-subtle rounded-3 py-2 px-3 h-100 d-flex flex-row align-items-center gap-2" :class="{ 'border-danger border-2': ev.id === sesion.idEvento }">
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-bold text-truncate">{{ ev.partido || 'Partido sin nombre' }}</div>
+              <span class="estado-pill mt-1" :class="estadoEvento(ev).clase">
+                <i :class="['bi', estadoEvento(ev).icono]" aria-hidden="true"></i> {{ estadoEvento(ev).texto }}
+              </span>
+              <div class="small text-muted mt-1">
+                {{ fechaDMA(ev.fecha) }} · {{ ev.cantidadTags }} {{ ev.cantidadTags === 1 ? 'tag' : 'tags' }}
+              </div>
+              <div class="small text-muted">Guardado el {{ fechaGuardado(ev.guardadoEl) }}</div>
+            </div>
+            <div class="d-flex gap-1 flex-shrink-0">
+              <button type="button" class="btn btn-sm btn-danger rounded-pill fw-bold" :disabled="!!eventoOcupado" @click="ev.id === sesion.idEvento ? (eligiendoEvento = false) : pedirAbrirEvento(ev)">
+                <span v-if="eventoOcupado === ev.id" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                {{ ev.id === sesion.idEvento ? 'Abierto' : 'Abrir' }}
+              </button>
+              <button type="button" class="btn btn-sm btn-light border text-danger" :disabled="!!eventoOcupado" :aria-label="`Borrar evento ${ev.partido}`" title="Borrar" @click="pedirBorrarEvento(ev)">
+                <i class="bi bi-trash3" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <template v-if="vista === 'vivo' || (haySesion && !eligiendoEvento)">
     <!-- ============ EVENTO: todo gira alrededor de él (marcar → guardar → sincronizar → revisar y publicar) ============ -->
     <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3" aria-labelledby="tv-titulo-evento">
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
         <h6 id="tv-titulo-evento" class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2">
           <i class="bi bi-calendar-event text-danger fs-5" aria-hidden="true"></i> {{ sesion.idEvento ? 'Evento abierto' : 'Evento nuevo' }}
         </h6>
-        <span v-if="etapa" class="estado-pill" :class="etapa.clase"><i :class="['bi', etapa.icono]" aria-hidden="true"></i> {{ etapa.texto }}</span>
+        <span v-if="vista === 'revisar' && etapa" class="estado-pill" :class="etapa.clase"><i :class="['bi', etapa.icono]" aria-hidden="true"></i> {{ etapa.texto }}</span>
       </div>
 
       <div class="row g-2 align-items-end">
@@ -22,9 +75,12 @@
           <input id="tv-fecha" v-model="sesion.fecha" type="date" class="form-control">
         </div>
       </div>
-      <p class="small text-muted mt-2 mb-0">
+      <p v-if="vista === 'vivo'" class="small text-muted mt-2 mb-0">
         Mirando el partido (en la cancha o por TV), tocá “Iniciar en vivo” con el pitazo y marcá cada situación.
-        Después, con el video, sincronizás para ver, ajustar y publicar los clips.
+        Al terminar, guardá el evento: después lo abrís en “Revisar evento” con el video.
+      </p>
+      <p v-else class="small text-muted mt-2 mb-0">
+        Cargá el video del partido, sincronizalo con el pitazo y revisá, ajustá y publicá los clips.
       </p>
 
       <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
@@ -32,10 +88,13 @@
           <span v-if="guardandoEvento" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
           <i v-else class="bi bi-floppy" aria-hidden="true"></i> {{ sesion.idEvento ? 'Guardar cambios' : 'Guardar evento' }}
         </button>
-        <button type="button" class="btn btn-sm btn-light border fw-bold" @click="abrirMisEventos">
-          <i class="bi bi-folder2-open" aria-hidden="true"></i> Mis eventos <span class="badge bg-dark ms-1">{{ eventos.length }}</span>
+        <button v-if="vista === 'revisar'" type="button" class="btn btn-sm btn-light border fw-bold" @click="cambiarEvento">
+          <i class="bi bi-folder2-open" aria-hidden="true"></i> Cambiar evento
         </button>
-        <button v-if="sesion.tags.length || sesion.idEvento" type="button" class="btn btn-sm btn-light border fw-bold" @click="confirmarNuevaSesion">
+        <button v-if="vista === 'vivo' && sesion.idEvento && !hayCambiosSinGuardar" type="button" class="btn btn-sm btn-light border fw-bold" @click="emit('ir-revisar')">
+          <i class="bi bi-film" aria-hidden="true"></i> Revisar este evento
+        </button>
+        <button v-if="vista === 'vivo' && (sesion.tags.length || sesion.idEvento)" type="button" class="btn btn-sm btn-light border fw-bold" @click="confirmarNuevaSesion">
           <i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo evento
         </button>
         <span v-if="hayCambiosSinGuardar" class="estado-pill estado-ambar"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Tags sin guardar</span>
@@ -48,7 +107,7 @@
       <div class="col-12 col-xl-8">
 
         <!-- Video del partido: se carga después, para sincronizar y revisar los clips -->
-        <section v-if="mostrarVideo" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
+        <section v-if="vista === 'revisar'" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
           <div v-if="!video.url" class="zona-video-vacia">
             <i class="bi bi-camera-video" aria-hidden="true"></i>
             <p class="fw-bold mb-1">Cargá el video del partido</p>
@@ -66,9 +125,6 @@
               <video ref="videoRef" :src="video.url" controls playsinline preload="metadata"
                      @loadedmetadata="alCargarMetadatos" @timeupdate="alAvanzarVideo" @play="reproduciendo = true" @pause="reproduciendo = false"
                      @error="formatoNoCompatible = true"></video>
-              <span v-if="ultimoTag" class="aviso-tag" :style="{ background: colorTag(ultimoTag.color).solido }">
-                <i class="bi bi-bookmark-fill" aria-hidden="true"></i> {{ ultimoTag.nombre }} · {{ formatearTiempo(ultimoTag.segundo ?? ultimoTag.segundoReloj) }}
-              </span>
               <span v-if="finPrevia !== null" class="aviso-previa">Viendo clip · termina en {{ formatearTiempo(finPrevia) }}</span>
             </div>
 
@@ -117,23 +173,51 @@
           </template>
         </section>
 
-        <!-- Otras cámaras del mismo partido (marcando sobre el video, con la principal cargada) -->
-        <CamarasPartido v-if="mostrarVideo && video.url" :principal="videoRef" :reproduciendo="reproduciendo"
+        <!-- Sincronizar los tags marcados en vivo con el video (el pitazo con el que se inició el en vivo) -->
+        <section v-if="vista === 'revisar' && tagsEnVivo.length" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
+            <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i class="bi bi-link-45deg text-danger fs-5" aria-hidden="true"></i> Sincronizar con el video</h6>
+            <span v-if="sesion.sincronizacion !== null" class="estado-pill estado-verde">
+              <i class="bi bi-check2-circle" aria-hidden="true"></i> El en vivo arranca en el {{ formatearTiempo(sesion.sincronizacion) }} del video
+            </span>
+          </div>
+          <ol class="small mb-3 ps-3">
+            <li>Cargá el video de este evento: el partido completo o el tiempo que marcaste.</li>
+            <li>Llevalo hasta el pitazo con el que iniciaste el en vivo.</li>
+            <li>Tocá <strong>“Sincronizar acá”</strong>, o escribí ese momento a mano.</li>
+          </ol>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button type="button" class="btn btn-sm btn-success fw-bold" :disabled="!video.url" @click="sincronizarAca">
+              <i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizar acá ({{ formatearTiempo(tiempoActual) }})
+            </button>
+            <div class="d-flex align-items-center gap-1">
+              <label for="tv-sync-manual" class="small">o en</label>
+              <input id="tv-sync-manual" v-model="syncManual" type="text" inputmode="numeric" class="form-control form-control-sm input-tiempo" placeholder="mm:ss">
+              <button type="button" class="btn btn-sm btn-light border fw-bold" @click="sincronizarManual">Aplicar</button>
+            </div>
+          </div>
+          <p v-if="errorSync" class="text-danger small fw-semibold mt-2 mb-0" role="alert">{{ errorSync }}</p>
+        </section>
+
+        <!-- Otras cámaras del mismo partido (con la principal cargada) -->
+        <CamarasPartido v-if="vista === 'revisar' && video.url" :principal="videoRef" :reproduciendo="reproduciendo"
                         :tiempo="tiempoActual" :velocidad="velocidad" />
 
         <!-- En vivo: el tiempo desde el pitazo mientras se mira el partido -->
-        <section class="card card-body border-0 rounded-3 p-3 mb-3 bg-dark text-white">
+        <section v-if="vista === 'vivo'" class="card card-body border-0 rounded-3 p-3 mb-3 bg-dark text-white">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <span class="estado-vivo" :class="{ corriendo: sesion.reloj.corriendo }">
               <span class="punto" aria-hidden="true"></span>
               {{ sesion.reloj.corriendo ? 'Marcando en vivo' : (segundosReloj ? 'En pausa' : 'Listo para empezar') }}
             </span>
-            <span v-if="sesion.sincronizacion !== null" class="badge bg-success">
-              <i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizado: el en vivo arranca en el {{ formatearTiempo(sesion.sincronizacion) }} del video
-            </span>
           </div>
 
           <div class="reloj" aria-live="off">{{ formatearTiempo(segundosReloj) }}</div>
+          <p class="text-center small fw-bold mb-3 ultimo-tag" aria-live="polite">
+            <span v-if="ultimoTag" class="estado-pill" :style="{ background: colorTag(ultimoTag.color).solido, color: '#fff' }">
+              <i class="bi bi-bookmark-fill" aria-hidden="true"></i> {{ ultimoTag.nombre }} · {{ formatearTiempo(ultimoTag.segundoReloj) }}
+            </span>
+          </p>
 
           <div class="d-flex flex-wrap justify-content-center gap-2">
             <button v-if="!sesion.reloj.corriendo" type="button" class="btn btn-danger rounded-pill fw-bold px-4" @click="iniciarReloj">
@@ -154,39 +238,10 @@
             Podés pausarlo en un tiempo muerto: los clips se ubican igual, con la hora real desde el pitazo.
             Lo que marques queda guardado en este dispositivo aunque se corte internet.
           </p>
-
-          <!-- Sincronización con el video -->
-          <div class="sincronizar">
-            <h6 class="text-white fw-bold small mb-2 text-uppercase d-flex align-items-center gap-2"><i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizar con el video</h6>
-            <ol class="small mb-2 ps-3">
-              <li>Cargá el video de este evento: el partido completo o el tiempo que marcaste.</li>
-              <li>Llevalo hasta el pitazo con el que iniciaste el en vivo.</li>
-              <li>Tocá <strong>“Sincronizar acá”</strong>, o escribí ese momento a mano.</li>
-            </ol>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-              <button v-if="!video.url" type="button" class="btn btn-light btn-sm fw-bold" @click="inputVideo?.click()">
-                <i class="bi bi-upload" aria-hidden="true"></i> Cargar video
-              </button>
-              <template v-else>
-                <button type="button" class="btn btn-light btn-sm fw-bold" @click="mostrarVideo = !mostrarVideo">
-                  <i :class="['bi', mostrarVideo ? 'bi-eye-slash' : 'bi-eye']" aria-hidden="true"></i> {{ mostrarVideo ? 'Ocultar video' : 'Ver video' }}
-                </button>
-                <button type="button" class="btn btn-success btn-sm fw-bold" :disabled="!mostrarVideo" @click="sincronizarAca">
-                  Sincronizar acá ({{ formatearTiempo(tiempoActual) }})
-                </button>
-              </template>
-              <div class="d-flex align-items-center gap-1">
-                <label for="tv-sync-manual" class="small">o en</label>
-                <input id="tv-sync-manual" v-model="syncManual" type="text" inputmode="numeric" class="form-control form-control-sm input-tiempo" placeholder="mm:ss">
-                <button type="button" class="btn btn-outline-light btn-sm fw-bold" @click="sincronizarManual">Aplicar</button>
-              </div>
-            </div>
-            <p v-if="errorSync" class="text-warning small fw-semibold mt-2 mb-0" role="alert">{{ errorSync }}</p>
-          </div>
         </section>
 
         <!-- ============ MARCAR SITUACIÓN: debajo del en vivo ============ -->
-        <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3">
+        <section v-if="vista === 'vivo'" class="card card-body shadow-sm border-light-subtle rounded-3 p-3">
           <div class="mb-3 pb-2 border-bottom border-2 border-danger">
             <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i class="bi bi-ui-checks-grid text-danger fs-5" aria-hidden="true"></i> Marcar situación</h6>
             <span class="small text-muted d-none d-md-block mt-1">
@@ -216,7 +271,7 @@
       <aside class="col-12 col-xl-4">
         <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3 lista-clips">
           <div class="d-flex align-items-center justify-content-between gap-2 mb-3 pb-2 border-bottom border-2 border-danger">
-            <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i class="bi bi-collection-play text-danger fs-5" aria-hidden="true"></i> Clips del evento <span class="badge rounded-pill bg-dark">{{ sesion.tags.length }}</span></h6>
+            <h6 class="fw-bold m-0 text-dark text-uppercase d-flex align-items-center gap-2"><i class="bi bi-collection-play text-danger fs-5" aria-hidden="true"></i> {{ vista === 'vivo' ? 'Tags marcados' : 'Clips del evento' }} <span class="badge rounded-pill bg-dark">{{ sesion.tags.length }}</span></h6>
           </div>
 
           <!-- Resumen del evento: cuántas veces se marcó cada situación -->
@@ -228,7 +283,7 @@
             </div>
           </div>
 
-          <div v-if="tagsSinSincronizar.length" class="alert alert-warning small py-2 mb-2">
+          <div v-if="vista === 'revisar' && tagsSinSincronizar.length" class="alert alert-warning small py-2 mb-2">
             {{ tagsSinSincronizar.length }} {{ tagsSinSincronizar.length === 1 ? 'tag marcado en vivo' : 'tags marcados en vivo' }} sin sincronizar con el video.
           </div>
 
@@ -238,7 +293,7 @@
             <li v-for="t in tagsOrdenados" :key="t.id">
             <div class="card shadow-sm border-light-subtle rounded-3 p-2 h-100 clip" :class="{ publicado: t.publicado }" :style="{ borderLeftColor: colorTag(t.color).solido }">
               <div class="d-flex align-items-start gap-2">
-                <input v-if="puedePublicar" :id="'sel-' + t.id" v-model="t.seleccionado" type="checkbox" class="form-check-input mt-1"
+                <input v-if="vista === 'revisar' && puedePublicar" :id="'sel-' + t.id" v-model="t.seleccionado" type="checkbox" class="form-check-input mt-1"
                        :disabled="t.publicado || t.segundo === null" :aria-label="`Seleccionar ${t.titulo}`">
                 <div class="flex-grow-1 min-w-0">
                   <div class="d-flex align-items-center gap-1 flex-wrap">
@@ -246,15 +301,17 @@
                     <span v-if="t.publicado" class="estado-pill estado-verde">Publicado</span>
                   </div>
                   <div class="tiempo-clip">
-                    <template v-if="t.segundo !== null">
+                    <template v-if="vista === 'revisar' && t.segundo !== null">
                       {{ formatearTiempo(limitesDeTag(t, video.duracion).inicio) }} – {{ formatearTiempo(limitesDeTag(t, video.duracion).fin) }}
                     </template>
-                    <template v-else>En vivo {{ formatearTiempo(t.segundoReloj) }} · sin sincronizar</template>
+                    <template v-else-if="vista === 'revisar'">En vivo {{ formatearTiempo(t.segundoReloj) }} · sin sincronizar</template>
+                    <template v-else>En vivo {{ formatearTiempo(t.segundoReloj ?? t.segundo) }}</template>
                   </div>
-                  <input v-model="t.titulo" type="text" maxlength="100" class="form-control form-control-sm mt-1" :aria-label="`Título del clip ${t.nombre}`" placeholder="Título">
+                  <input v-if="vista === 'revisar'" v-model="t.titulo" type="text" maxlength="100" class="form-control form-control-sm mt-1" :aria-label="`Título del clip ${t.nombre}`" placeholder="Título">
                 </div>
               </div>
               <div class="d-flex align-items-center gap-1 mt-2">
+                <template v-if="vista === 'revisar'">
                 <button type="button" class="btn btn-sm btn-dark" :disabled="!video.url || t.segundo === null" :aria-label="`Ver clip ${t.titulo}`" title="Ver clip" @click="verClip(t)">
                   <i class="bi bi-play-fill" aria-hidden="true"></i>
                 </button>
@@ -268,12 +325,13 @@
                         :aria-label="`Descargar clip ${t.titulo}`" title="Descargar clip" @click="descargarClips([t])">
                   <i class="bi bi-download" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="btn btn-sm btn-light border text-danger" :aria-label="`Borrar ${t.titulo}`" title="Borrar" @click="borrarTag(t.id)">
+                </template>
+                <button type="button" class="btn btn-sm btn-light border text-danger" :class="{ 'ms-auto': vista === 'vivo' }" :aria-label="`Borrar ${t.titulo}`" title="Borrar" @click="borrarTag(t.id)">
                   <i class="bi bi-trash3" aria-hidden="true"></i>
                 </button>
               </div>
               <!-- Ajuste del inicio y del fin del clip (segundos antes y después del momento marcado) -->
-              <div v-if="ajustando === t.id && t.segundo !== null" class="ajuste-clip bg-light rounded-3 p-2 mt-2">
+              <div v-if="vista === 'revisar' && ajustando === t.id && t.segundo !== null" class="ajuste-clip bg-light rounded-3 p-2 mt-2">
                 <div v-for="campo in CAMPOS_AJUSTE" :key="campo.clave" class="d-flex align-items-center gap-1">
                   <span class="small fw-bold etiqueta-ajuste">{{ campo.nombre }}</span>
                   <button type="button" class="btn btn-sm btn-light border" :disabled="(t[campo.clave] ?? VENTANA_SEGUNDOS) <= AJUSTE_MINIMO"
@@ -288,7 +346,7 @@
             </li>
           </ul>
 
-          <div v-if="sesion.tags.length" class="row g-2 mt-1">
+          <div v-if="vista === 'revisar' && sesion.tags.length" class="row g-2 mt-1">
           <!-- Descargar: para todos (cada árbitro se lleva sus clips para analizarlos) -->
           <div class="col-12">
           <div class="d-flex flex-column gap-2 border-top pt-3">
@@ -315,12 +373,16 @@
           </div>
           </div>
           </div>
-          <p v-if="sesion.tags.length && !puedePublicar" class="small text-muted border-top pt-2 mt-3 mb-0">
+          <p v-if="vista === 'vivo' && sesion.tags.length" class="small text-muted border-top pt-2 mt-3 mb-0">
+            <i class="bi bi-info-circle" aria-hidden="true"></i> Al terminar, guardá el evento y abrilo en “Revisar evento” para cargar el video y ver los clips.
+          </p>
+          <p v-if="vista === 'revisar' && sesion.tags.length && !puedePublicar" class="small text-muted border-top pt-2 mt-3 mb-0">
             <i class="bi bi-info-circle" aria-hidden="true"></i> Publicar en AAAB TV es solo para coordinadores y observadores.
           </p>
         </section>
       </aside>
     </div>
+    </template>
 
     <!-- ============ PUBLICAR ============ -->
     <ModalBase :show="mostrarPublicar" titulo="Publicar en AAAB TV" icono="bi-broadcast" color-icono="bg-danger-subtle text-danger"
@@ -394,57 +456,6 @@
         </div>
       </template>
     </ModalBase>
-
-    <!-- ============ MIS EVENTOS ============ -->
-    <ModalBase :show="mostrarEventos" titulo="Mis eventos" icono="bi-folder2-open" color-icono="bg-danger-subtle text-danger"
-               max-width="640px" @close="mostrarEventos = false">
-      <p class="small text-muted mb-3">
-        Los partidos que guardaste con sus tags. Abrí uno, cargá el video y sincronizalo para ver, ajustar y publicar los clips:
-        por ejemplo, marcás en vivo hoy desde el celular y mañana lo abrís en la computadora.
-        <template v-if="AAAB_TV_CON_SERVIDOR">Los ves desde cualquier dispositivo en el que entres con tu usuario.</template>
-        <template v-else>Por ahora quedan guardados en este dispositivo.</template>
-      </p>
-
-      <div v-if="cargandoEventos && !eventos.length" class="text-center py-4">
-        <span class="spinner-border spinner-border-sm text-secondary" aria-hidden="true"></span>
-        <p class="small text-muted mt-2 mb-0">Cargando tus eventos...</p>
-      </div>
-
-      <div v-else-if="errorEventos" class="text-center py-3">
-        <p class="small text-danger fw-semibold mb-2">{{ errorEventos }}</p>
-        <button type="button" class="btn btn-sm btn-light border fw-bold" @click="recargarEventos">Reintentar</button>
-      </div>
-
-      <EstadoVacio v-else-if="!eventos.length" icono="bi-folder2" titulo="Todavía no guardaste eventos" mensaje="Marcá tus tags y tocá “Guardar evento”." />
-
-      <ul v-else class="list-unstyled m-0 d-flex flex-column gap-2">
-        <li v-for="ev in eventos" :key="ev.id" class="card card-body shadow-sm border-light-subtle rounded-3 py-2 px-3 d-flex flex-row align-items-center gap-2" :class="{ 'border-danger border-2': ev.id === sesion.idEvento }">
-          <div class="flex-grow-1 min-w-0">
-            <div class="fw-bold text-truncate">{{ ev.partido || 'Partido sin nombre' }}</div>
-            <span class="estado-pill mt-1" :class="estadoEvento(ev).clase">
-              <i :class="['bi', estadoEvento(ev).icono]" aria-hidden="true"></i> {{ estadoEvento(ev).texto }}
-            </span>
-            <div class="small text-muted mt-1">
-              {{ fechaDMA(ev.fecha) }} · {{ ev.cantidadTags }} {{ ev.cantidadTags === 1 ? 'tag' : 'tags' }}
-            </div>
-            <div class="small text-muted">Guardado el {{ fechaGuardado(ev.guardadoEl) }}</div>
-          </div>
-          <div class="d-flex gap-1 flex-shrink-0">
-            <button type="button" class="btn btn-sm btn-danger rounded-pill fw-bold" :disabled="ev.id === sesion.idEvento || !!eventoOcupado" @click="pedirAbrirEvento(ev)">
-              <span v-if="eventoOcupado === ev.id" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-              {{ ev.id === sesion.idEvento ? 'Abierto' : 'Abrir' }}
-            </button>
-            <button type="button" class="btn btn-sm btn-light border text-danger" :disabled="!!eventoOcupado" :aria-label="`Borrar evento ${ev.partido}`" title="Borrar" @click="pedirBorrarEvento(ev)">
-              <i class="bi bi-trash3" aria-hidden="true"></i>
-            </button>
-          </div>
-        </li>
-      </ul>
-
-      <template #footer>
-        <button type="button" class="btn btn-dark fw-bold" @click="mostrarEventos = false">Cerrar</button>
-      </template>
-    </ModalBase>
   </div>
 </template>
 
@@ -455,6 +466,7 @@ import { fechaDMA } from '@/utils/fechas'
 import { crearZip, descargarBlob } from '@/utils/zip'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import {
   useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesDeTag, idGrupoDeClave, DECISIONES, AJUSTE_MINIMO, AJUSTE_MAXIMO
 } from '@/composables/useAaabTv'
@@ -467,7 +479,12 @@ import LineaTiempoPistas from '@/components/panel-arbitro/aaab-tv/LineaTiempoPis
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import DatosJugada from '@/components/panel-arbitro/aaab-tv/DatosJugada.vue'
 
-const emit = defineEmits(['publicado'])
+// vista: "vivo" (marcar los tags mirando el partido y guardarlos en un evento) o
+// "revisar" (abrir un evento guardado, cargar el video, sincronizar, revisar y publicar los clips)
+const props = defineProps({
+  vista: { type: String, default: 'vivo', validator: v => ['vivo', 'revisar'].includes(v) }
+})
+const emit = defineEmits(['publicado', 'ir-revisar'])
 const toast = inject('toast')
 const notificar = inject('notificar')
 
@@ -510,7 +527,6 @@ const tiempoActual = ref(0)
 const reproduciendo = ref(false)
 const velocidad = ref(1)
 const finPrevia = ref(null)
-const mostrarVideo = ref(false)
 
 const elegirVideo = (e) => {
   const archivo = e.target.files?.[0]
@@ -523,7 +539,6 @@ const elegirVideo = (e) => {
   formatoNoCompatible.value = false
   cargarVideo(archivo)
   tiempoActual.value = 0
-  mostrarVideo.value = true
 }
 
 const alCargarMetadatos = () => {
@@ -603,10 +618,7 @@ const irAlSegundo = (segundo) => {
 
 const verClip = (t) => {
   const v = videoRef.value
-  if (!v) {
-    mostrarVideo.value = true
-    return
-  }
+  if (!v) return
   const { inicio, fin } = limitesDeTag(t, video.duracion)
   v.currentTime = inicio
   finPrevia.value = fin
@@ -696,7 +708,12 @@ const confirmarNuevaSesion = () => {
 }
 
 // ─── Eventos guardados ──────────────────────────────────────
-const mostrarEventos = ref(false)
+// Revisar: mostrando la lista de eventos para elegir otro (con uno ya abierto)
+const eligiendoEvento = ref(false)
+// Hay un evento abierto o tags sin guardar en pantalla
+const haySesion = computed(() => sesion.tags.length > 0 || !!sesion.idEvento)
+// Tags marcados en vivo: son los que se ubican en el video al sincronizar
+const tagsEnVivo = computed(() => sesion.tags.filter(t => t.origen === 'vivo'))
 const guardandoEvento = ref(false)
 const errorEventos = ref('')
 const eventoOcupado = ref(null)   // id del evento que se está abriendo o borrando
@@ -716,8 +733,8 @@ const recargarEventos = async () => {
 }
 
 // Se recarga cada vez que se abre: con servidor puede haber eventos guardados desde otro dispositivo
-const abrirMisEventos = () => {
-  mostrarEventos.value = true
+const cambiarEvento = () => {
+  eligiendoEvento.value = true
   recargarEventos()
 }
 
@@ -732,7 +749,7 @@ const guardarEventoActual = async () => {
     const res = await guardarEvento()
     if (!res?.ok) throw new Error(res?.message)
     const n = res.payload.tags.length
-    toast({ tipo: 'success', titulo: 'Evento guardado', mensaje: `“${res.payload.partido}” quedó en Mis eventos con ${n} ${n === 1 ? 'tag' : 'tags'}.` })
+    toast({ tipo: 'success', titulo: 'Evento guardado', mensaje: `“${res.payload.partido}” quedó guardado con ${n} ${n === 1 ? 'tag' : 'tags'}. Abrilo en “Revisar evento” para cargar el video.` })
   } catch (e) {
     toast({ tipo: 'danger', titulo: 'No se pudo guardar', mensaje: `${e.message || 'Intentá de nuevo.'} Tus tags siguen en pantalla.` })
   } finally {
@@ -745,8 +762,7 @@ const abrirEventoElegido = async (ev) => {
   try {
     const res = await abrirEvento(ev.id)
     if (!res.ok) throw new Error(res.message)
-    mostrarEventos.value = false
-    mostrarVideo.value = false
+    eligiendoEvento.value = false
     const evento = res.payload
     const sinSincronizar = evento.tags.filter(t => t.segundo === null).length
     toast({
@@ -891,11 +907,11 @@ const publicar = async () => {
 // ─── Teclado: marcar (1 a 9) y controles del video ───
 const alPresionarTecla = (e) => {
   const destino = e.target
-  if (mostrarPublicar.value || mostrarEventos.value || e.ctrlKey || e.metaKey || e.altKey) return
+  if (mostrarPublicar.value || e.ctrlKey || e.metaKey || e.altKey) return
   if (destino.closest?.('input, textarea, select, [contenteditable="true"]')) return
 
   // 1 a 9: marca el botón de "Mi panel" en esa posición (sin repetir si se deja apretada la tecla)
-  if (/^[1-9]$/.test(e.key) && !e.repeat) {
+  if (props.vista === 'vivo' && /^[1-9]$/.test(e.key) && !e.repeat) {
     const boton = botones.value.at(Number(e.key) - 1)
     if (boton && !motivoPadDeshabilitado.value) {
       e.preventDefault()
@@ -917,7 +933,11 @@ const alPresionarTecla = (e) => {
   if (e.key === '.' && videoRef.value) { e.preventDefault(); pasoCuadro(1) }
 }
 
-onMounted(() => window.addEventListener('keydown', alPresionarTecla))
+onMounted(() => {
+  window.addEventListener('keydown', alPresionarTecla)
+  // Revisar: la lista de eventos se trae al entrar (con servidor puede haber eventos de otro dispositivo)
+  if (props.vista === 'revisar') recargarEventos()
+})
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', alPresionarTecla)
   clearTimeout(temporizadorAviso)
@@ -944,7 +964,6 @@ onBeforeUnmount(() => {
 }
 .marco-video video { display: block; width: 100%; max-height: 62vh; background: #000; }
 
-.aviso-tag,
 .aviso-previa {
   position: absolute;
   left: 50%;
@@ -957,9 +976,7 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   pointer-events: none;
 }
-.aviso-tag { top: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
 .aviso-previa { top: 12px; background: rgba(15, 23, 42, 0.85); }
-.aviso-tag + .aviso-previa { top: 48px; }
 
 .linea-tiempo {
   position: relative;
@@ -1019,13 +1036,9 @@ onBeforeUnmount(() => {
   line-height: 1.1;
   margin: 10px 0 14px;
 }
+.ultimo-tag { min-height: 1.6rem; }
 .nota-vivo { font-size: 0.8rem; color: var(--o-texto-suave, #94a3b8); text-align: center; margin: 12px 0 0; }
 
-.sincronizar {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid #334155;
-}
 .input-tiempo { width: 80px; text-align: center; }
 
 /* Pad */
