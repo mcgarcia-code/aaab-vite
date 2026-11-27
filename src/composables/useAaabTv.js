@@ -156,7 +156,7 @@ const SESION_VACIA = () => ({
   fecha: new Date().toISOString().slice(0, 10),
   modo: 'vivo',
   tags: [],
-  // Reloj del modo en vivo (se guarda para no perderlo si se recarga la página).
+  // En vivo: el tiempo desde el pitazo (se guarda para no perderlo si se recarga la página).
   // inicioReal: hora (ms) del pitazo con el que se inició. Los tags se ubican con la hora real desde
   // ese pitazo, así pausar el cronómetro (tiempo muerto) no corre los clips: el video sigue grabando
   reloj: { corriendo: false, acumulado: 0, desde: null, inicioReal: null },
@@ -404,21 +404,18 @@ export function useAaabTv() {
   }
 
   // ─── Tags ─────────────────────────────────────────────────
-  // En modo video el segundo es el del video; en vivo, los segundos reales desde el pitazo
-  // (se pasan al video al sincronizar)
-  const marcarTag = (boton, segundoVideo = null) => {
-    const enVivo = sesion.modo === 'vivo'
-    const segundoRelojActual = enVivo ? segundosReloj.value : null
-    const segundoReal = enVivo ? segundosRealesAhora() : null
-    const segundo = enVivo
-      ? (sesion.sincronizacion !== null ? segundoReal + sesion.sincronizacion : null)
-      : Math.floor(segundoVideo ?? 0)
+  // Los tags se marcan siempre en vivo, mirando el partido: se guardan los segundos reales
+  // desde el pitazo y se pasan al video al sincronizar (si el evento ya está sincronizado, quedan ubicados)
+  const marcarTag = (boton) => {
+    const segundoRelojActual = segundosReloj.value
+    const segundoReal = segundosRealesAhora()
+    const segundo = sesion.sincronizacion !== null ? segundoReal + sesion.sincronizacion : null
     const tag = {
       id: nuevoId(),
       idBoton: boton.id,
       nombre: boton.nombre,
       color: boton.color,
-      origen: enVivo ? 'vivo' : 'video',
+      origen: 'vivo',
       segundoReloj: segundoRelojActual,
       segundoReal,
       segundo,
@@ -467,7 +464,7 @@ export function useAaabTv() {
   )
   const tagsSinSincronizar = computed(() => sesion.tags.filter(t => t.segundo === null))
 
-  // ─── Cronómetro en vivo ───────────────────────────────────
+  // ─── En vivo ───────────────────────────────────
   const iniciarReloj = () => {
     if (sesion.reloj.corriendo) return
     // Primer inicio (o un evento viejo sin hora real): el pitazo fue hace "acumulado" segundos
@@ -558,7 +555,8 @@ export function useAaabTv() {
       camaras: Array.isArray(ev.camaras) ? ev.camaras.map(c => ({ ...c })) : [],
       partido: ev.partido || '',
       fecha: ev.fecha || '',
-      modo: ev.modo === 'vivo' ? 'vivo' : 'video',
+      // Siempre en vivo. Los eventos viejos marcados sobre el video ya traen sus tags ubicados
+      modo: 'vivo',
       tags: Array.isArray(ev.tags) ? ev.tags : [],
       reloj: { corriendo: false, acumulado: Number(ev.reloj?.acumulado) || 0, desde: null, inicioReal: Number(ev.reloj?.inicioReal) || null },
       sincronizacion: Number.isFinite(ev.sincronizacion) ? ev.sincronizacion : null,

@@ -15,11 +15,11 @@ import { api, listaDe } from '@/api/api'
 //   POST guardarEvento   { evento }         → evento guardado (alta o modificación por id: upsert)
 //   POST borrarEvento    { id }             → true
 // Evento completo:
-//   { id: string (lo genera el front, UUID), partido: string, fecha: 'aaaa-mm-dd', modo: 'video'|'vivo',
+//   { id: string (lo genera el front, UUID), partido: string, fecha: 'aaaa-mm-dd', modo: 'vivo' (siempre en vivo; los eventos viejos pueden traer 'video'),
 //     tags: [{ id, idBoton, nombre, color, origen: 'video'|'vivo', segundoReloj: number|null,
 //              segundo: number|null, titulo, descripcion, seleccionado, publicado }],
-//     reloj: { acumulado: number },          // segundos del cronómetro al guardar
-//     sincronizacion: number|null,           // segundo del video en el que arrancó el cronómetro
+//     reloj: { acumulado: number },          // segundos del en vivo al guardar
+//     sincronizacion: number|null,           // segundo del video en el que arrancó el en vivo
 //     guardadoEl: ISO 8601 (lo pone el servidor) }
 // =====================================================================
 

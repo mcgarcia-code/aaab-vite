@@ -13,22 +13,18 @@
       </div>
 
       <div class="row g-2 align-items-end">
-        <div class="col-12 col-md-5">
+        <div class="col-12 col-md-8">
           <label for="tv-partido" class="form-label small fw-bold">Partido</label>
           <input id="tv-partido" v-model="sesion.partido" type="text" maxlength="80" class="form-control" placeholder="Ej: River vs. Ferro — Liga de Honor">
         </div>
-        <div class="col-12 col-sm-5 col-md-3">
+        <div class="col-12 col-md-4">
           <label for="tv-fecha" class="form-label small fw-bold">Fecha</label>
           <input id="tv-fecha" v-model="sesion.fecha" type="date" class="form-control">
         </div>
-        <div class="col-12 col-sm-7 col-md-4">
-          <span id="tv-tiempo-tags" class="form-label small fw-bold d-block">Marcás con</span>
-          <PestanasSeccion :model-value="sesion.modo" :pestanas="PESTANAS_MODO" llenar aria-labelledby="tv-tiempo-tags" @update:model-value="cambiarModo" />
-        </div>
       </div>
       <p class="small text-muted mt-2 mb-0">
-        <template v-if="sesion.modo === 'vivo'">Mirando el partido (en la cancha o en la compu): iniciá el cronómetro con el pitazo y marcá. Después abrís el evento, cargás el video y sincronizás.</template>
-        <template v-else>Con el video ya cargado: los tags toman el momento del video y quedan sincronizados.</template>
+        Mirando el partido (en la cancha o por TV), tocá “Iniciar en vivo” con el pitazo y marcá cada situación.
+        Después, con el video, sincronizás para ver, ajustar y publicar los clips.
       </p>
 
       <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
@@ -48,11 +44,11 @@
     </section>
 
     <div class="row g-3 mb-3">
-      <!-- ============ VIDEO / CRONÓMETRO ============ -->
+      <!-- ============ VIDEO / EN VIVO ============ -->
       <div class="col-12 col-lg-8">
 
-        <!-- Video del partido (marcando sobre el video, y con cronómetro para sincronizar) -->
-        <section v-if="sesion.modo === 'video' || mostrarVideoEnVivo" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
+        <!-- Video del partido: se carga después, para sincronizar y revisar los clips -->
+        <section v-if="mostrarVideo" class="card card-body shadow-sm border-light-subtle rounded-3 p-3 mb-3">
           <div v-if="!video.url" class="zona-video-vacia">
             <i class="bi bi-camera-video" aria-hidden="true"></i>
             <p class="fw-bold mb-1">Cargá el video del partido</p>
@@ -118,18 +114,18 @@
         </section>
 
         <!-- Otras cámaras del mismo partido (marcando sobre el video, con la principal cargada) -->
-        <CamarasPartido v-if="sesion.modo === 'video' && video.url" :principal="videoRef" :reproduciendo="reproduciendo"
+        <CamarasPartido v-if="mostrarVideo && video.url" :principal="videoRef" :reproduciendo="reproduciendo"
                         :tiempo="tiempoActual" :velocidad="velocidad" />
 
-        <!-- Cronómetro (marcando mirando el partido) -->
-        <section v-if="sesion.modo === 'vivo'" class="card card-body border-0 rounded-3 p-3 mb-3 bg-dark text-white">
+        <!-- En vivo: el tiempo desde el pitazo mientras se mira el partido -->
+        <section class="card card-body border-0 rounded-3 p-3 mb-3 bg-dark text-white">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <span class="estado-vivo" :class="{ corriendo: sesion.reloj.corriendo }">
               <span class="punto" aria-hidden="true"></span>
               {{ sesion.reloj.corriendo ? 'Marcando en vivo' : (segundosReloj ? 'En pausa' : 'Listo para empezar') }}
             </span>
             <span v-if="sesion.sincronizacion !== null" class="badge bg-success">
-              <i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizado: el cronómetro arranca en el {{ formatearTiempo(sesion.sincronizacion) }} del video
+              <i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizado: el en vivo arranca en el {{ formatearTiempo(sesion.sincronizacion) }} del video
             </span>
           </div>
 
@@ -137,7 +133,7 @@
 
           <div class="d-flex flex-wrap justify-content-center gap-2">
             <button v-if="!sesion.reloj.corriendo" type="button" class="btn btn-danger rounded-pill fw-bold px-4" @click="iniciarReloj">
-              <i class="bi bi-play-fill" aria-hidden="true"></i> {{ segundosReloj ? 'Seguir' : 'Iniciar con el pitazo' }}
+              <i class="bi bi-play-fill" aria-hidden="true"></i> {{ segundosReloj ? 'Seguir' : 'Iniciar en vivo' }}
             </button>
             <button v-else type="button" class="btn btn-light fw-bold px-4" @click="pausarReloj">
               <i class="bi bi-pause-fill" aria-hidden="true"></i> Pausar
@@ -147,10 +143,10 @@
             </button>
           </div>
           <p class="nota-vivo">
-            Iniciá el cronómetro con el pitazo inicial. Vos elegís cómo seguir:
+            Tocá “Iniciar en vivo” con el pitazo inicial. Vos elegís cómo seguir:
             si vas a cargar el partido completo en un solo video, dejalo correr también en el entretiempo;
             si lo vas a cargar por tiempos, al terminar el primer tiempo guardá el evento y empezá uno nuevo
-            para el segundo, con el cronómetro desde cero en su pitazo inicial.
+            para el segundo, iniciando el en vivo desde cero en su pitazo inicial.
             Podés pausarlo en un tiempo muerto: los clips se ubican igual, con la hora real desde el pitazo.
             Lo que marques queda guardado en este dispositivo aunque se corte internet.
           </p>
@@ -160,7 +156,7 @@
             <h6 class="text-white fw-bold small mb-2 text-uppercase d-flex align-items-center gap-2"><i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizar con el video</h6>
             <ol class="small mb-2 ps-3">
               <li>Cargá el video de este evento: el partido completo o el tiempo que marcaste.</li>
-              <li>Llevalo hasta el pitazo con el que iniciaste el cronómetro.</li>
+              <li>Llevalo hasta el pitazo con el que iniciaste el en vivo.</li>
               <li>Tocá <strong>“Sincronizar acá”</strong>, o escribí ese momento a mano.</li>
             </ol>
             <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -168,10 +164,10 @@
                 <i class="bi bi-upload" aria-hidden="true"></i> Cargar video
               </button>
               <template v-else>
-                <button type="button" class="btn btn-light btn-sm fw-bold" @click="mostrarVideoEnVivo = !mostrarVideoEnVivo">
-                  <i :class="['bi', mostrarVideoEnVivo ? 'bi-eye-slash' : 'bi-eye']" aria-hidden="true"></i> {{ mostrarVideoEnVivo ? 'Ocultar video' : 'Ver video' }}
+                <button type="button" class="btn btn-light btn-sm fw-bold" @click="mostrarVideo = !mostrarVideo">
+                  <i :class="['bi', mostrarVideo ? 'bi-eye-slash' : 'bi-eye']" aria-hidden="true"></i> {{ mostrarVideo ? 'Ocultar video' : 'Ver video' }}
                 </button>
-                <button type="button" class="btn btn-success btn-sm fw-bold" :disabled="!mostrarVideoEnVivo" @click="sincronizarAca">
+                <button type="button" class="btn btn-success btn-sm fw-bold" :disabled="!mostrarVideo" @click="sincronizarAca">
                   Sincronizar acá ({{ formatearTiempo(tiempoActual) }})
                 </button>
               </template>
@@ -187,7 +183,7 @@
 
       </div>
 
-      <!-- ============ SITUACIONES: al costado del video/cronómetro para marcar sin dejar de mirar ============ -->
+      <!-- ============ SITUACIONES: al costado del video y del en vivo para marcar sin dejar de mirar ============ -->
       <aside class="col-12 col-lg-4">
         <section class="card card-body shadow-sm border-light-subtle rounded-3 p-3 pad-lateral">
           <div class="mb-3 pb-2 border-bottom border-2 border-danger">
@@ -256,7 +252,7 @@
                 <template v-if="t.segundo !== null">
                   {{ formatearTiempo(limitesDeTag(t, video.duracion).inicio) }} – {{ formatearTiempo(limitesDeTag(t, video.duracion).fin) }}
                 </template>
-                <template v-else>Cronómetro {{ formatearTiempo(t.segundoReloj) }} · sin sincronizar</template>
+                <template v-else>En vivo {{ formatearTiempo(t.segundoReloj) }} · sin sincronizar</template>
               </div>
               <input v-model="t.titulo" type="text" maxlength="100" class="form-control form-control-sm mt-1" :aria-label="`Título del clip ${t.nombre}`" placeholder="Título">
             </div>
@@ -405,7 +401,7 @@
                max-width="640px" @close="mostrarEventos = false">
       <p class="small text-muted mb-3">
         Los partidos que guardaste con sus tags. Abrí uno, cargá el video y sincronizalo para ver, ajustar y publicar los clips:
-        por ejemplo, marcás con el cronómetro hoy desde el celular y mañana lo abrís en la computadora.
+        por ejemplo, marcás en vivo hoy desde el celular y mañana lo abrís en la computadora.
         <template v-if="AAAB_TV_CON_SERVIDOR">Los ves desde cualquier dispositivo en el que entres con tu usuario.</template>
         <template v-else>Por ahora quedan guardados en este dispositivo.</template>
       </p>
@@ -431,7 +427,6 @@
             </span>
             <div class="small text-muted mt-1">
               {{ fechaDMA(ev.fecha) }} · {{ ev.cantidadTags }} {{ ev.cantidadTags === 1 ? 'tag' : 'tags' }}
-              · {{ ev.modo === 'vivo' ? 'con cronómetro' : 'sobre el video' }}
             </div>
             <div class="small text-muted">Guardado el {{ fechaGuardado(ev.guardadoEl) }}</div>
           </div>
@@ -461,7 +456,6 @@ import { fechaDMA } from '@/utils/fechas'
 import { crearZip, descargarBlob } from '@/utils/zip'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import {
   useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesDeTag, idGrupoDeClave, DECISIONES, AJUSTE_MINIMO, AJUSTE_MAXIMO
 } from '@/composables/useAaabTv'
@@ -490,11 +484,6 @@ const { recortando, progreso, recortar } = useRecorteClips()
 const VELOCIDADES = [0.5, 1, 2]
 // Cuadro a cuadro: se detectan los cuadros por segundo del video mientras se reproduce (30 hasta saberlo)
 const { cuadrosPorSegundo, duracionCuadro, detectado: fpsDetectado, observar: observarCuadros } = useCuadrosPorSegundo()
-// Cómo se toma el tiempo de los tags (se guarda como modo del evento)
-const PESTANAS_MODO = [
-  { clave: 'vivo', etiqueta: 'Cronómetro', icono: 'bi-stopwatch' },
-  { clave: 'video', etiqueta: 'Video', icono: 'bi-film' }
-]
 const CAMPOS_AJUSTE = [
   { clave: 'antes', nombre: 'Antes' },
   { clave: 'despues', nombre: 'Después' }
@@ -522,7 +511,7 @@ const tiempoActual = ref(0)
 const reproduciendo = ref(false)
 const velocidad = ref(1)
 const finPrevia = ref(null)
-const mostrarVideoEnVivo = ref(false)
+const mostrarVideo = ref(false)
 
 const elegirVideo = (e) => {
   const archivo = e.target.files?.[0]
@@ -535,7 +524,7 @@ const elegirVideo = (e) => {
   formatoNoCompatible.value = false
   cargarVideo(archivo)
   tiempoActual.value = 0
-  if (sesion.modo === 'vivo') mostrarVideoEnVivo.value = true
+  mostrarVideo.value = true
 }
 
 const alCargarMetadatos = () => {
@@ -616,7 +605,7 @@ const irAlSegundo = (segundo) => {
 const verClip = (t) => {
   const v = videoRef.value
   if (!v) {
-    if (sesion.modo === 'vivo') mostrarVideoEnVivo.value = true
+    mostrarVideo.value = true
     return
   }
   const { inicio, fin } = limitesDeTag(t, video.duracion)
@@ -625,14 +614,7 @@ const verClip = (t) => {
   v.play().catch(() => {})
 }
 
-// ─── Cómo se toma el tiempo de los tags: cronómetro (mirando el partido) o video cargado ───
-const cambiarModo = (modo) => {
-  if (modo === sesion.modo) return
-  videoRef.value?.pause()
-  sesion.modo = modo
-  mostrarVideoEnVivo.value = false
-}
-
+// ─── Estado del evento ──────────────────────────────────────
 // En qué paso está el evento abierto: marcar → sincronizar → revisar y publicar
 const ETAPAS = {
   sincronizar: { texto: 'Falta sincronizar con el video', clase: 'estado-ambar', icono: 'bi-link-45deg' },
@@ -645,7 +627,7 @@ const etapa = computed(() => {
   return video.url ? ETAPAS.listo : ETAPAS.sinVideo
 })
 // En Mis eventos no hay video cargado: se mira solo si falta sincronizar
-const estadoEvento = (ev) => (ev.modo === 'vivo' && ev.tagsSinSincronizar
+const estadoEvento = (ev) => (ev.tagsSinSincronizar
   ? ETAPAS.sincronizar
   : { ...ETAPAS.listo, texto: 'Listo para revisar' })
 
@@ -655,28 +637,27 @@ const destelloId = ref(null)
 let temporizadorAviso = null
 
 const motivoPadDeshabilitado = computed(() => {
-  if (sesion.modo === 'video' && !video.url) return 'Cargá el video para empezar a marcar.'
-  if (sesion.modo === 'vivo' && !sesion.reloj.corriendo) return 'Iniciá el cronómetro con el pitazo para marcar.'
+  if (!sesion.reloj.corriendo) return 'Tocá “Iniciar en vivo” con el pitazo para marcar.'
   return ''
 })
 
 const marcar = (boton) => {
   if (motivoPadDeshabilitado.value) return
-  const tag = marcarTag(boton, videoRef.value?.currentTime ?? 0)
+  const tag = marcarTag(boton)
   ultimoTag.value = tag
   destelloId.value = boton.id
   clearTimeout(temporizadorAviso)
   temporizadorAviso = setTimeout(() => { ultimoTag.value = null; destelloId.value = null }, 1500)
 }
 
-// ─── Cronómetro y sincronización ───────────────────────────
+// ─── En vivo y sincronización ─────────────────────────────
 const syncManual = ref('')
 const errorSync = ref('')
 
 const aplicarSincronizacion = (segundo) => {
   sincronizar(segundo)
   errorSync.value = ''
-  toast({ tipo: 'success', titulo: 'Tags sincronizados', mensaje: `El cronómetro arranca en el ${formatearTiempo(segundo)} del video.` })
+  toast({ tipo: 'success', titulo: 'Tags sincronizados', mensaje: `El en vivo arranca en el ${formatearTiempo(segundo)} del video.` })
 }
 
 const sincronizarAca = () => aplicarSincronizacion(tiempoActual.value)
@@ -698,8 +679,8 @@ const sincronizarManual = () => {
 const confirmarReinicioReloj = () => {
   notificar({
     tipo: 'danger',
-    titulo: 'Reiniciar cronómetro',
-    mensaje: 'El cronómetro vuelve a cero. Los tags que ya marcaste se conservan.',
+    titulo: 'Reiniciar en vivo',
+    mensaje: 'El tiempo en vivo vuelve a cero. Los tags que ya marcaste se conservan.',
     alConfirmar: reiniciarReloj
   })
 }
@@ -766,7 +747,7 @@ const abrirEventoElegido = async (ev) => {
     const res = await abrirEvento(ev.id)
     if (!res.ok) throw new Error(res.message)
     mostrarEventos.value = false
-    mostrarVideoEnVivo.value = false
+    mostrarVideo.value = false
     const evento = res.payload
     const sinSincronizar = evento.tags.filter(t => t.segundo === null).length
     toast({
@@ -1126,7 +1107,7 @@ onBeforeUnmount(() => {
   margin-left: 2px;
 }
 
-/* Situaciones al costado: en escritorio quedan fijas mientras se mira el video o el cronómetro */
+/* Situaciones al costado: en escritorio quedan fijas mientras se mira el video o el en vivo */
 @media (min-width: 992px) {
   .pad-lateral {
     position: sticky;
