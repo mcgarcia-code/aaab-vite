@@ -5,8 +5,8 @@
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-bottom">
           <p class="seccion-descripcion">
-            <template v-if="vista === 'autorizar'">Clips por autorizar · {{ pendientes }} {{ pendientes === 1 ? 'pendiente' : 'pendientes' }} de revisión</template>
-            <template v-else>Analizá partidos y subí videos a AAAB TV</template>
+            {{ DESCRIPCION_VISTA[vista] }}
+            <template v-if="vista === 'autorizar'"> · {{ pendientes }} {{ pendientes === 1 ? 'pendiente' : 'pendientes' }} de revisión</template>
           </p>
           <PestanasSeccion :model-value="vista" :pestanas="pestanas" llenar aria-label="AAAB TV" @update:model-value="irA" />
         </div>
@@ -14,6 +14,15 @@
         <div class="card-body p-3 p-md-4">
           <!-- ======================= ESTUDIO ======================= -->
           <EstudioAaabTv v-if="vista === 'estudio'" @publicado="alPublicar" />
+
+          <!-- ======================= COLECCIONES OFICIALES ======================= -->
+          <ColeccionesAaabTv v-else-if="vista === 'colecciones'" />
+
+          <!-- ======================= ESTADÍSTICAS ======================= -->
+          <template v-else-if="vista === 'estadisticas'">
+            <EstadoCargando v-if="cargandoModeracion && !clipsModeracion.length" texto="Cargando estadísticas" />
+            <EstadisticasAaabTv v-else :clips="clipsModeracion" />
+          </template>
 
           <!-- ======================= AUTORIZAR ======================= -->
           <template v-else>
@@ -46,10 +55,13 @@
                        mensaje="Los clips que publiquen coordinadores y observadores aparecen acá." />
 
           <ul v-else class="list-unstyled m-0 lista">
-            <li v-for="c in clipsFiltrados" :key="c.id" class="fila" :style="{ borderLeftColor: colorTag(c.color).solido }">
+            <li v-for="c in paginados" :key="c.id" class="fila" :style="{ borderLeftColor: colorTag(c.color).solido }">
               <div class="flex-grow-1 min-w-0">
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-1">
                   <span class="badge-tag" :style="{ background: colorTag(c.color).solido }">{{ c.etiqueta }}</span>
+                  <span v-if="DECISIONES[c.decision]" class="estado-pill" :class="DECISIONES[c.decision].clase">
+                    <i :class="['bi', DECISIONES[c.decision].icono]" aria-hidden="true"></i> {{ DECISIONES[c.decision].etiqueta }}
+                  </span>
                 </div>
                 <h3 class="titulo-clip text-truncate">{{ c.titulo }}</h3>
                 <p class="datos-clip">
@@ -87,6 +99,7 @@
               </div>
             </li>
           </ul>
+          <BarraPaginacion v-if="totalPaginas > 1" v-model="paginaActual" :total="totalPaginas" class="mt-3" />
           </template>
         </div>
       </div>
@@ -97,7 +110,8 @@
                max-width="820px" :hay-cambios="hayCambios" @close="editando = null">
       <template v-if="editando">
         <form id="form-clip-admin" novalidate @submit.prevent="guardar">
-          <ReproductorClip v-bind="tramoDe(editando)" />
+          <ReproductorClip v-bind="tramoDe(editando)" :anotaciones="editando.anotaciones || []" puede-anotar
+                           :guardando="guardandoDibujo" @guardar-anotaciones="guardarDibujos" />
 
           <div class="d-flex flex-wrap gap-2 align-items-center small text-muted mt-3">
             <span class="badge-tag" :style="{ background: colorTag(editando.color).solido }">{{ editando.etiqueta }}</span>
@@ -113,6 +127,20 @@
 
           <label for="clip-admin-desc" class="form-label small fw-bold mt-2">Descripción</label>
           <textarea id="clip-admin-desc" v-model="form.descripcion" rows="3" maxlength="600" class="form-control"></textarea>
+
+          <div class="row g-2 mt-1">
+            <div class="col-12 col-md-5">
+              <label for="clip-admin-decision" class="form-label small fw-bold">Decisión arbitral</label>
+              <select id="clip-admin-decision" v-model="form.decision" class="form-select">
+                <option :value="null">Sin valorar</option>
+                <option v-for="(d, clave) in DECISIONES" :key="clave" :value="clave">{{ d.etiqueta }}</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-7">
+              <span class="form-label small fw-bold d-block">Árbitros involucrados</span>
+              <SelectorArbitros id="clip-admin-arbitros" v-model="form.arbitros" />
+            </div>
+          </div>
 
           <span class="form-label small fw-bold d-block mt-3">Autorización por canal</span>
           <div v-for="d in form.destinos" :key="claveCanal(d.idGrupo)" class="destino-form">
@@ -145,7 +173,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, inject, onMounted } from 'vue'
+import { ref, reactive, computed, inject, onMounted, watch } from 'vue'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
@@ -153,18 +181,33 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'
 import ComentariosClip from '@/components/panel-arbitro/aaab-tv/ComentariosClip.vue'
 import EstudioAaabTv from '@/components/panel-arbitro/aaab-tv/EstudioAaabTv.vue'
+import ColeccionesAaabTv from '@/components/panel-admin/desarrollo-arbitral/ColeccionesAaabTv.vue'
+import EstadisticasAaabTv from '@/components/panel-admin/desarrollo-arbitral/EstadisticasAaabTv.vue'
 import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  useAaabTv, ESTADOS_DESTINO, claveCanal, estadoGeneral, colorTag, formatearTiempo
+  useAaabTv, ESTADOS_DESTINO, DECISIONES, claveCanal, estadoGeneral, colorTag, formatearTiempo
 } from '@/composables/useAaabTv'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { normalizarTexto } from '@/utils/texto'
 import { fechaArg } from '@/utils/fechas'
 
 useHead({ title: 'AAAB TV · Desarrollo Arbitral | AAAB' })
 
 const toast = inject('toast')
-const { clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip, tramoDe } = useAaabTv()
+const {
+  clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip, tramoDe, guardarAnotaciones
+} = useAaabTv()
+
+const CLIPS_POR_PAGINA = 15
+const DESCRIPCION_VISTA = {
+  autorizar: 'Clips por autorizar',
+  colecciones: 'Colecciones oficiales de cada canal',
+  estadisticas: 'Estadísticas de AAAB TV',
+  estudio: 'Analizá partidos y subí videos a AAAB TV'
+}
 
 const errorCarga = ref('')
 const recargar = async () => {
@@ -173,14 +216,17 @@ const recargar = async () => {
 }
 onMounted(recargar)
 
-// ─── Pestañas: Autorizar / Estudio (queda en la URL: ?vista=estudio) ───
+// ─── Pestañas: Autorizar / Colecciones / Estadísticas / Estudio (quedan en la URL: ?vista=...) ───
 // El coordinador general también analiza, arma su panel y sube videos, igual que en el panel árbitro
 const route = useRoute()
 const router = useRouter()
-const vista = computed(() => (route.query.vista === 'estudio' ? 'estudio' : 'autorizar'))
-const irA = (destino) => router.replace({ query: destino === 'estudio' ? { vista: 'estudio' } : {} })
+const VISTAS = ['autorizar', 'colecciones', 'estadisticas', 'estudio']
+const vista = computed(() => (VISTAS.includes(route.query.vista) ? route.query.vista : 'autorizar'))
+const irA = (destino) => router.replace({ query: destino === 'autorizar' ? {} : { vista: destino } })
 const pestanas = computed(() => [
   { clave: 'autorizar', etiqueta: 'Autorizar', icono: 'bi-check2-square', cantidad: pendientes.value || null },
+  { clave: 'colecciones', etiqueta: 'Colecciones', icono: 'bi-bookmark-star' },
+  { clave: 'estadisticas', etiqueta: 'Estadísticas', icono: 'bi-bar-chart' },
   { clave: 'estudio', etiqueta: 'Estudio', icono: 'bi-camera-reels' }
 ])
 
@@ -218,6 +264,10 @@ const clipsFiltrados = computed(() => {
     .sort((a, b) => String(b.publicadoEl || '').localeCompare(String(a.publicadoEl || '')))
 })
 
+// Paginación (vuelve a la primera página al cambiar de filtro o de búsqueda)
+const { paginaActual, totalPaginas, paginados } = usePaginacion(clipsFiltrados, CLIPS_POR_PAGINA)
+watch([filtro, busqueda], () => { paginaActual.value = 1 })
+
 // Canal que se está cambiando (para no mandar dos pedidos seguidos del mismo)
 const ocupado = ref(null)
 const claveOcupado = (clip, destino) => `${clip.id}|${claveCanal(destino.idGrupo)}`
@@ -240,23 +290,45 @@ const cambiar = async (clip, destino, estado) => {
 const editando = ref(null)
 const intento = ref(false)
 const guardando = ref(false)
-const form = reactive({ titulo: '', descripcion: '', destinos: [] })
+const form = reactive({ titulo: '', descripcion: '', decision: null, arbitros: [], destinos: [] })
 
 const abrir = (clip) => {
   editando.value = clip
   Object.assign(form, {
     titulo: clip.titulo,
     descripcion: clip.descripcion || '',
+    decision: clip.decision ?? null,
+    arbitros: [...(clip.arbitros || [])],
     destinos: clip.destinos.map(d => ({ ...d }))
   })
   intento.value = false
 }
 
+const idsArbitros = (lista) => (lista || []).map(a => a.id).sort().join(',')
 const hayCambios = computed(() => !!editando.value && (
   form.titulo !== editando.value.titulo ||
   form.descripcion !== (editando.value.descripcion || '') ||
+  form.decision !== (editando.value.decision ?? null) ||
+  idsArbitros(form.arbitros) !== idsArbitros(editando.value.arbitros) ||
   form.destinos.some((d, i) => d.estado !== editando.value.destinos[i]?.estado)
 ))
+
+// Dibujos sobre el video: el coordinador general los guarda en cualquier clip
+const guardandoDibujo = ref(false)
+const guardarDibujos = async (anotaciones) => {
+  const clip = editando.value
+  guardandoDibujo.value = true
+  try {
+    const res = await guardarAnotaciones(clip.id, anotaciones)
+    if (!res?.ok) {
+      toast({ tipo: 'danger', titulo: 'No se pudo guardar el dibujo', mensaje: res?.message || 'Intentá de nuevo.' })
+      return
+    }
+    editando.value = { ...clip, ...res.payload }
+  } finally {
+    guardandoDibujo.value = false
+  }
+}
 
 const guardar = async () => {
   intento.value = true
@@ -266,6 +338,8 @@ const guardar = async () => {
     const res = await editarClip(editando.value.id, {
       titulo: form.titulo,
       descripcion: form.descripcion,
+      decision: form.decision,
+      arbitros: form.arbitros,
       destinos: form.destinos.map(d => ({ idGrupo: d.idGrupo, estado: d.estado }))
     })
     if (!res?.ok) {

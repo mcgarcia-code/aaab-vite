@@ -1,4 +1,4 @@
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, ref, computed, watch, markRaw } from 'vue'
 import { auth } from '@/api/auth'
 import { crearRepositorioEventos, resumirEvento, AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 import { crearRepositorioClips, esRolPublicador, publicaAutorizado as publicaYaAutorizado } from '@/api/aaabTvClips'
@@ -60,11 +60,25 @@ export const formatearTiempo = (segundos) => {
   return h > 0 ? `${h}:${dos(m)}:${dos(s % 60)}` : `${dos(m)}:${dos(s % 60)}`
 }
 
-// Inicio y fin del clip de un tag (recortado a la duración del video si se conoce)
-export const limitesClip = (segundo, duracion = 0) => {
-  const inicio = Math.max(0, segundo - VENTANA_SEGUNDOS)
-  const fin = duracion > 0 ? Math.min(duracion, segundo + VENTANA_SEGUNDOS) : segundo + VENTANA_SEGUNDOS
+// Inicio y fin del clip de un tag (recortado a la duración del video si se conoce).
+// antes / despues: segundos antes y después del momento marcado (cada tag puede ajustarlos)
+export const limitesClip = (segundo, duracion = 0, antes = VENTANA_SEGUNDOS, despues = VENTANA_SEGUNDOS) => {
+  const inicio = Math.max(0, segundo - antes)
+  const fin = duracion > 0 ? Math.min(duracion, segundo + despues) : segundo + despues
   return { inicio, fin, duracion: Math.max(0, fin - inicio) }
+}
+// Los límites de un tag con su propio ajuste (los tags viejos no lo tienen: 8 y 8)
+export const limitesDeTag = (tag, duracion = 0) =>
+  limitesClip(tag.segundo, duracion, tag.antes ?? VENTANA_SEGUNDOS, tag.despues ?? VENTANA_SEGUNDOS)
+// Rango permitido al ajustar cuánto dura un clip antes y después del momento marcado
+export const AJUSTE_MINIMO = 1
+export const AJUSTE_MAXIMO = 60
+
+// Valoración de la decisión arbitral que muestra el clip (para estadísticas y "Mis clips")
+export const DECISIONES = {
+  correcta: { etiqueta: 'Correcta', icono: 'bi-check-circle-fill', clase: 'estado-verde' },
+  incorrecta: { etiqueta: 'Incorrecta', icono: 'bi-x-octagon-fill', clase: 'estado-rojo' },
+  a_revisar: { etiqueta: 'A revisar', icono: 'bi-question-circle-fill', clase: 'estado-pendiente' }
 }
 
 const nuevoId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
@@ -86,7 +100,13 @@ const guardar = (clave, valor) => {
 }
 
 // ─── Estado compartido (módulo): sobrevive al cambiar de pestaña dentro del panel ───
-const idUsuario = () => auth.getUser()?.id ?? 'anonimo'
+// Las autoridades (usuarios_admin) pueden tener el mismo id que un árbitro: sus claves llevan "admin-".
+// Los árbitros conservan la clave de siempre, para no perder lo que ya tenían guardado
+const idUsuario = () => {
+  const usuario = auth.getUser()
+  if (!usuario) return 'anonimo'
+  return usuario.esAutoridad ? `admin-${usuario.id}` : usuario.id
+}
 const claveStorage = (nombre) => `aaabTv.${nombre}.${idUsuario()}`
 
 // Panel de botones: sin servidor se lee al instante de este navegador; con servidor arranca con el
@@ -103,8 +123,10 @@ const SESION_VACIA = () => ({
   fecha: new Date().toISOString().slice(0, 10),
   modo: 'video',
   tags: [],
-  // Reloj del modo en vivo (se guarda para no perderlo si se recarga la página)
-  reloj: { corriendo: false, acumulado: 0, desde: null },
+  // Reloj del modo en vivo (se guarda para no perderlo si se recarga la página).
+  // inicioReal: hora (ms) del pitazo con el que se inició. Los tags se ubican con la hora real desde
+  // ese pitazo, así pausar el cronómetro (tiempo muerto) no corre los clips: el video sigue grabando
+  reloj: { corriendo: false, acumulado: 0, desde: null, inicioReal: null },
   // Segundo del video en el que se inició el cronómetro (null = todavía no se sincronizó)
   sincronizacion: null,
   // Evento guardado del que viene esta sesión (null = todavía no se guardó)
@@ -118,6 +140,10 @@ const sesion = reactive({ ...SESION_VACIA(), ...leer(claveStorage('sesion'), {})
 // El File queda fuera del estado reactivo: lo usa el recorte de clips para descargarlos
 const video = reactive({ url: '', nombre: '', duracion: 0 })
 let archivoVideo = null
+
+// Cámaras extra del mismo partido (otro ángulo). desfase: segundo de esa cámara cuando la principal
+// está en 0 (null = todavía no se sincronizó). Al publicar, cada clip lleva también esos ángulos
+const camaras = ref([])
 
 // "Mis eventos": sesiones guardadas para retomarlas (ej. marcar en vivo hoy y cargar el video mañana).
 // Con servidor se ven desde cualquier dispositivo; sin servidor, en este navegador (ver api/aaabTvEventos.js)
@@ -157,16 +183,26 @@ export const estadoGeneral = (clip) => {
 }
 
 // Clips, moderación, comentarios, listas y panel: con servidor o en este navegador (ver api/aaabTvClips.js)
-const repoClips = crearRepositorioClips(() => claveStorage('panel'), () => claveStorage('listas'))
+const repoClips = crearRepositorioClips(() => claveStorage('panel'), () => claveStorage('listas'), () => claveStorage('montajes'))
+
+// Guardado del panel: 'guardado' | 'guardando' | 'error' (si falla se avisa y se puede reintentar)
+const estadoPanel = ref('guardado')
+const guardarPanelAhora = async () => {
+  clearTimeout(temporizadorPanel)
+  estadoPanel.value = 'guardando'
+  const res = await repoClips.guardarPanel(copiar(botones.value))
+  estadoPanel.value = res?.ok ? 'guardado' : 'error'
+  if (res?.ok) ultimoPanel = JSON.stringify(botones.value)
+  return res
+}
 
 watch(botones, (v) => {
   if (!panelCargado) return   // con servidor: no pisar el panel guardado antes de leerlo
-  const json = JSON.stringify(v)
-  if (json === ultimoPanel) return
-  ultimoPanel = json
+  if (JSON.stringify(v) === ultimoPanel) return
   clearTimeout(temporizadorPanel)
+  estadoPanel.value = 'guardando'
   // Con servidor se espera a que termine de editar para no mandar un pedido por cada cambio
-  temporizadorPanel = setTimeout(() => repoClips.guardarPanel(copiar(v)), AAAB_TV_CON_SERVIDOR ? 800 : 0)
+  temporizadorPanel = setTimeout(guardarPanelAhora, AAAB_TV_CON_SERVIDOR ? 800 : 0)
 }, { deep: true })
 
 const cargarPanel = async () => {
@@ -192,6 +228,11 @@ const listasReproduccion = ref([])
 // Moderación (coordinador general): todos los clips
 const clipsModeracion = ref([])
 const cargandoModeracion = ref(false)
+// Colecciones oficiales: las del portal (de los canales que ve) y todas, para el coordinador general
+const colecciones = ref([])
+const coleccionesAdmin = ref([])
+// Montajes del usuario (varios clips unidos en un video)
+const montajes = ref([])
 // Qué vistas se cargaron alguna vez (para recargar solo esas si cambian en otra pestaña)
 const vistasUsadas = { portal: false, moderacion: false }
 
@@ -221,6 +262,9 @@ const cargarClipsModeracion = () => {
 const cargarCanales = () => cargarEn(canales, null, repoClips.listarCanales)
 const cargarGruposPublicacion = () => cargarEn(gruposPublicacion, null, repoClips.listarGruposPublicacion)
 const cargarListasReproduccion = () => cargarEn(listasReproduccion, null, repoClips.listarListas)
+const cargarColecciones = () => cargarEn(colecciones, null, repoClips.listarColecciones)
+const cargarColeccionesAdmin = () => cargarEn(coleccionesAdmin, null, repoClips.listarColeccionesAdmin)
+const cargarMontajes = () => cargarEn(montajes, null, repoClips.listarMontajes)
 
 // Reemplaza un clip actualizado en las vistas cargadas
 const actualizarEnVistas = (clip) => {
@@ -231,8 +275,8 @@ const actualizarEnVistas = (clip) => {
 
 // Si se modera desde otra pestaña (solo en la maqueta), se recargan las vistas que se usan
 repoClips.alCambiarEnOtraPestana(() => {
-  if (vistasUsadas.portal) cargarClips()
-  if (vistasUsadas.moderacion) cargarClipsModeracion()
+  if (vistasUsadas.portal) { cargarClips(); cargarColecciones() }
+  if (vistasUsadas.moderacion) { cargarClipsModeracion(); cargarColeccionesAdmin() }
 })
 
 // Reloj en vivo: se calcula con la hora real, así no se atrasa si la pestaña queda en segundo plano
@@ -243,6 +287,10 @@ const segundosReloj = computed(() => {
   const corriendo = r.corriendo && r.desde ? (ahora.value - r.desde) / 1000 : 0
   return Math.floor(r.acumulado + corriendo)
 })
+// Segundos reales desde el pitazo (incluye las pausas del cronómetro); sin hora real, los del cronómetro
+const segundosRealesAhora = () => (sesion.reloj.inicioReal
+  ? Math.max(0, Math.floor((Date.now() - sesion.reloj.inicioReal) / 1000))
+  : segundosReloj.value)
 const asegurarIntervalo = () => {
   if (sesion.reloj.corriendo && !intervaloReloj) intervaloReloj = setInterval(() => { ahora.value = Date.now() }, 250)
   if (!sesion.reloj.corriendo && intervaloReloj) { clearInterval(intervaloReloj); intervaloReloj = null }
@@ -273,13 +321,36 @@ export function useAaabTv() {
   }
   const archivoDelVideo = () => archivoVideo
 
+  // ─── Cámaras extra ────────────────────────────────────────
+  const agregarCamara = (archivo) => {
+    camaras.value.push({
+      id: nuevoId(),
+      nombre: `Cámara ${camaras.value.length + 2}`,
+      url: URL.createObjectURL(archivo),
+      archivo: markRaw(archivo),
+      desfase: null
+    })
+  }
+  const quitarCamara = (id) => {
+    const camara = camaras.value.find(c => c.id === id)
+    if (camara) URL.revokeObjectURL(camara.url)
+    camaras.value = camaras.value.filter(c => c.id !== id)
+  }
+  // segundoCamara: lo que muestra esa cámara en el mismo instante en que la principal está en segundoPrincipal
+  const sincronizarCamara = (id, segundoCamara, segundoPrincipal) => {
+    const camara = camaras.value.find(c => c.id === id)
+    if (camara) camara.desfase = Math.round((segundoCamara - segundoPrincipal) * 10) / 10
+  }
+
   // ─── Tags ─────────────────────────────────────────────────
-  // En modo video el segundo es el del video; en vivo, el del cronómetro (se pasa al video al sincronizar)
+  // En modo video el segundo es el del video; en vivo, los segundos reales desde el pitazo
+  // (se pasan al video al sincronizar)
   const marcarTag = (boton, segundoVideo = null) => {
     const enVivo = sesion.modo === 'vivo'
     const segundoRelojActual = enVivo ? segundosReloj.value : null
+    const segundoReal = enVivo ? segundosRealesAhora() : null
     const segundo = enVivo
-      ? (sesion.sincronizacion !== null ? segundoRelojActual + sesion.sincronizacion : null)
+      ? (sesion.sincronizacion !== null ? segundoReal + sesion.sincronizacion : null)
       : Math.floor(segundoVideo ?? 0)
     const tag = {
       id: nuevoId(),
@@ -288,14 +359,27 @@ export function useAaabTv() {
       color: boton.color,
       origen: enVivo ? 'vivo' : 'video',
       segundoReloj: segundoRelojActual,
+      segundoReal,
       segundo,
+      antes: VENTANA_SEGUNDOS,
+      despues: VENTANA_SEGUNDOS,
       titulo: boton.nombre,
       descripcion: '',
+      decision: null,
+      arbitros: [],
       seleccionado: true,
       publicado: false
     }
     sesion.tags.push(tag)
     return tag
+  }
+
+  // Ajuste del inicio o del fin de un clip: cuántos segundos antes y después del momento marcado
+  const ajustarTag = (id, campo, delta) => {
+    const tag = sesion.tags.find(t => t.id === id)
+    if (!tag || !['antes', 'despues'].includes(campo)) return
+    const actual = tag[campo] ?? VENTANA_SEGUNDOS
+    tag[campo] = Math.min(AJUSTE_MAXIMO, Math.max(AJUSTE_MINIMO, actual + delta))
   }
   const borrarTag = (id) => { sesion.tags = sesion.tags.filter(t => t.id !== id) }
 
@@ -314,6 +398,8 @@ export function useAaabTv() {
   // ─── Cronómetro en vivo ───────────────────────────────────
   const iniciarReloj = () => {
     if (sesion.reloj.corriendo) return
+    // Primer inicio (o un evento viejo sin hora real): el pitazo fue hace "acumulado" segundos
+    if (!sesion.reloj.inicioReal) sesion.reloj.inicioReal = Date.now() - (sesion.reloj.acumulado || 0) * 1000
     sesion.reloj.corriendo = true
     sesion.reloj.desde = Date.now()
     ahora.value = Date.now()
@@ -327,18 +413,19 @@ export function useAaabTv() {
     asegurarIntervalo()
   }
   const reiniciarReloj = () => {
-    sesion.reloj = { corriendo: false, acumulado: 0, desde: null }
+    sesion.reloj = { corriendo: false, acumulado: 0, desde: null, inicioReal: null }
     asegurarIntervalo()
   }
 
-  // Cronómetro → video: el segundo del video en el que arrancó el cronómetro.
-  // Alcanza con un solo punto porque cada evento es un solo video: el partido completo, o un
-  // tiempo si el usuario carga cada tiempo como un evento aparte (con su propio cronómetro).
+  // Cronómetro → video: el segundo del video en el que arrancó el cronómetro (el pitazo).
+  // Alcanza con un solo punto porque cada evento es un solo video y los tags usan la hora real desde
+  // el pitazo (las pausas del cronómetro no los corren). Los tags viejos sin hora real usan el cronómetro.
   const sincronizar = (segundoInicioEnVideo) => {
     const offset = Math.max(0, Math.floor(segundoInicioEnVideo))
     sesion.sincronizacion = offset
     sesion.tags.forEach(t => {
-      if (t.origen === 'vivo' && t.segundoReloj !== null) t.segundo = t.segundoReloj + offset
+      const base = t.segundoReal ?? t.segundoReloj
+      if (t.origen === 'vivo' && base !== null && base !== undefined) t.segundo = base + offset
     })
   }
 
@@ -372,7 +459,7 @@ export function useAaabTv() {
       fecha: sesion.fecha,
       modo: sesion.modo,
       tags: copiar(sesion.tags),
-      reloj: { acumulado: segundosReloj.value },
+      reloj: { acumulado: segundosReloj.value, inicioReal: sesion.reloj.inicioReal },
       sincronizacion: sesion.sincronizacion
     }
     // La huella es la de lo que se manda (si se marca un tag mientras guarda, queda como cambio sin guardar)
@@ -396,7 +483,7 @@ export function useAaabTv() {
       fecha: ev.fecha || '',
       modo: ev.modo === 'vivo' ? 'vivo' : 'video',
       tags: Array.isArray(ev.tags) ? ev.tags : [],
-      reloj: { corriendo: false, acumulado: Number(ev.reloj?.acumulado) || 0, desde: null },
+      reloj: { corriendo: false, acumulado: Number(ev.reloj?.acumulado) || 0, desde: null, inicioReal: Number(ev.reloj?.inicioReal) || null },
       sincronizacion: Number.isFinite(ev.sincronizacion) ? ev.sincronizacion : null,
       idEvento: ev.id
     })
@@ -424,8 +511,11 @@ export function useAaabTv() {
     if (!destinos?.length) return { ok: false, message: 'Elegí al menos un canal.' }
     progresoSubida.value = 0
     try {
+      // Solo las cámaras sincronizadas: sin desfase no se sabe qué tramo cortar
+      const camarasListas = camaras.value.filter(c => c.desfase !== null)
       const res = await repoClips.publicarClips({
         archivo: archivoVideo,
+        camaras: camarasListas.map(c => ({ archivo: c.archivo, nombre: c.nombre, desfase: c.desfase })),
         partido,
         fecha,
         destinos,
@@ -433,16 +523,23 @@ export function useAaabTv() {
         clips: clips.map(c => ({
           ...c,
           titulo: c.titulo.trim(),
-          descripcion: c.descripcion.trim(),
-          // inicio y fin los usa la maqueta; con servidor los calcula el hosting a partir del segundo
-          ...limitesClip(c.segundo, video.duracion)
+          descripcion: (c.descripcion || '').trim(),
+          // Inicio y fin ya ajustados por el usuario (antes / después del momento marcado)
+          ...limitesDeTag(c, video.duracion)
         })),
         alProgresar: (fraccion) => { progresoSubida.value = fraccion }
       })
       if (!res?.ok) return res
       const nuevos = Array.isArray(res.payload?.clips) ? res.payload.clips : []
-      // En la maqueta el clip se ve con el video local de esta sesión
-      if (!AAAB_TV_CON_SERVIDOR) nuevos.forEach(c => { videosDeSesion[c.id] = video.url })
+      // En la maqueta el clip se ve con los videos locales de esta sesión (la principal y las cámaras)
+      if (!AAAB_TV_CON_SERVIDOR) {
+        nuevos.forEach(c => {
+          videosDeSesion[c.id] = {
+            url: video.url,
+            angulos: camarasListas.map(cam => ({ nombre: cam.nombre, url: cam.url, desfase: cam.desfase }))
+          }
+        })
+      }
       clipsVisibles.value = [...nuevos, ...clipsVisibles.value.filter(c => !nuevos.some(n => n.id === c.id))]
       clips.forEach(c => {
         const tag = sesion.tags.find(t => t.id === c.id)
@@ -457,7 +554,7 @@ export function useAaabTv() {
   // Video externo (pestaña "Subir video"): una jugada que llegó por fuera del análisis, por ejemplo
   // por WhatsApp. Se sube entero y queda como un solo clip, pendiente en cada canal elegido.
   // archivo: File del video; duracion: segundos (la lee el navegador). Devuelve { ok, payload: clip, message }
-  const publicarVideoExterno = async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos }) => {
+  const publicarVideoExterno = async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos, decision, arbitros }) => {
     if (!puedePublicar.value) return { ok: false, message: 'Solo coordinadores y observadores pueden subir videos.' }
     if (!destinos?.length) return { ok: false, message: 'Elegí al menos un canal.' }
     progresoSubida.value = 0
@@ -472,13 +569,15 @@ export function useAaabTv() {
         fecha,
         duracion: Math.floor(duracion),
         destinos,
+        decision,
+        arbitros,
         alProgresar: (fraccion) => { progresoSubida.value = fraccion }
       })
       if (!res?.ok) return res
       const clip = res.payload?.clips?.[0]
       if (!clip) return { ok: true, payload: null }
       // En la maqueta el clip se ve con el archivo local de esta sesión
-      if (!AAAB_TV_CON_SERVIDOR) videosDeSesion[clip.id] = URL.createObjectURL(archivo)
+      if (!AAAB_TV_CON_SERVIDOR) videosDeSesion[clip.id] = { url: URL.createObjectURL(archivo), angulos: [] }
       clipsVisibles.value = [clip, ...clipsVisibles.value.filter(c => c.id !== clip.id)]
       return { ok: true, payload: clip }
     } finally {
@@ -498,11 +597,32 @@ export function useAaabTv() {
   // El coordinador general (o el admin) no pasa por la autorización: lo suyo sale autorizado
   const publicaAutorizado = computed(() => publicaYaAutorizado())
 
-  // Qué reproducir de un clip: si el servidor ya lo cortó, el archivo del clip entero;
-  // si no (maqueta), el tramo [inicio, fin] del video local de esta sesión
-  const tramoDe = (clip) => (clip.urlVideo
-    ? { url: clip.urlVideo, inicio: 0, fin: Math.max(0, clip.fin - clip.inicio) }
-    : { url: videosDeSesion[clip.id] || '', inicio: clip.inicio, fin: clip.fin })
+  // Qué reproducir de un clip, para ReproductorClip:
+  // - con servidor: el clip ya cortado (de 0 a su duración), en HLS si hay y si no en MP4, con sus ángulos
+  // - en la maqueta: el tramo [inicio, fin] del video local de esta sesión (y de las cámaras, con su desfase)
+  // procesando: la VPS todavía lo está cortando
+  const tramoDe = (clip) => {
+    const duracion = Math.max(0, clip.fin - clip.inicio)
+    if (clip.urlVideo || clip.urlHls) {
+      return {
+        url: clip.urlVideo || '',
+        urlHls: clip.urlHls || '',
+        inicio: 0,
+        fin: duracion,
+        procesando: false,
+        angulos: (clip.angulos || []).map(a => ({ nombre: a.nombre, url: a.urlVideo || '', urlHls: a.urlHls || '', inicio: 0, fin: duracion }))
+      }
+    }
+    const local = videosDeSesion[clip.id]
+    return {
+      url: local?.url || '',
+      urlHls: '',
+      inicio: clip.inicio,
+      fin: clip.fin,
+      procesando: AAAB_TV_CON_SERVIDOR && clip.procesado === false,
+      angulos: (local?.angulos || []).map(a => ({ nombre: a.nombre, url: a.url, urlHls: '', inicio: clip.inicio + a.desfase, fin: clip.fin + a.desfase }))
+    }
+  }
 
   // ─── Moderación (coordinador general) ─────────────────────
   // Devuelven { ok, payload: clip actualizado, message }
@@ -512,10 +632,46 @@ export function useAaabTv() {
     if (res?.ok && res.payload?.id) actualizarEnVistas(res.payload)
     return res
   }
-  // destinos: [{ idGrupo, estado }]
-  const editarClip = async (id, { titulo, descripcion, destinos }) => {
-    const res = await repoClips.editarClip({ id, titulo: titulo.trim(), descripcion: descripcion.trim(), destinos })
+  // destinos: [{ idGrupo, estado }]; decision: clave de DECISIONES o null; arbitros: [{ id, nombre }]
+  const editarClip = async (id, { titulo, descripcion, decision, arbitros, destinos }) => {
+    const res = await repoClips.editarClip({
+      id, titulo: titulo.trim(), descripcion: descripcion.trim(), decision: decision || null, arbitros: arbitros || [], destinos
+    })
     if (res?.ok && res.payload?.id) actualizarEnVistas(res.payload)
+    return res
+  }
+
+  // ─── Dibujos sobre el video (anotaciones del clip) ────────
+  // Los guarda el autor del clip o el coordinador general. Devuelve { ok, payload: clip, message }
+  const guardarAnotaciones = async (idClip, anotaciones) => {
+    const res = await repoClips.guardarAnotaciones(idClip, anotaciones)
+    if (res?.ok && res.payload?.id) actualizarEnVistas(res.payload)
+    return res
+  }
+
+  // ─── Colecciones oficiales (las arma el coordinador general) ───
+  const guardarColeccion = async (datos) => {
+    const res = await repoClips.guardarColeccion({ ...datos, nombre: datos.nombre.trim(), descripcion: (datos.descripcion || '').trim() })
+    if (res?.ok && res.payload?.id) {
+      coleccionesAdmin.value = [res.payload, ...coleccionesAdmin.value.filter(c => c.id !== res.payload.id)]
+    }
+    return res
+  }
+  const borrarColeccion = async (id) => {
+    const res = await repoClips.borrarColeccion(id)
+    if (res?.ok) coleccionesAdmin.value = coleccionesAdmin.value.filter(c => c.id !== id)
+    return res
+  }
+
+  // ─── Montajes (varios clips unidos en un solo video) ──────
+  const crearMontaje = async (titulo, idsClips) => {
+    const res = await repoClips.crearMontaje({ titulo: titulo.trim(), idsClips })
+    if (res?.ok && res.payload?.id) montajes.value = [res.payload, ...montajes.value]
+    return res
+  }
+  const borrarMontaje = async (id) => {
+    const res = await repoClips.borrarMontaje(id)
+    if (res?.ok) montajes.value = montajes.value.filter(m => m.id !== id)
     return res
   }
 
@@ -546,16 +702,19 @@ export function useAaabTv() {
   }
 
   return {
-    botones, sesion, video,
+    botones, sesion, video, camaras,
     segundosReloj, tagsOrdenados, tagsSinSincronizar,
-    cargarPanel, agregarBoton, editarBoton, borrarBoton, restablecerBotones,
-    cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag,
+    cargarPanel, agregarBoton, editarBoton, borrarBoton, restablecerBotones, estadoPanel, guardarPanelAhora,
+    cargarVideo, archivoDelVideo, agregarCamara, quitarCamara, sincronizarCamara,
+    marcarTag, borrarTag, moverTag, ajustarTag,
     iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion,
     eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento,
     gruposPublicacion, cargarGruposPublicacion, publicarClips, publicarVideoExterno, progresoSubida, borrarClipPublicado,
     puedePublicar, publicaAutorizado, clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales, tramoDe,
-    clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip,
+    clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip, guardarAnotaciones,
     listarComentarios, agregarComentario, borrarComentario,
-    listasReproduccion, cargarListasReproduccion, crearListaReproduccion, borrarListaReproduccion, cambiarClipEnLista
+    listasReproduccion, cargarListasReproduccion, crearListaReproduccion, borrarListaReproduccion, cambiarClipEnLista,
+    colecciones, cargarColecciones, coleccionesAdmin, cargarColeccionesAdmin, guardarColeccion, borrarColeccion,
+    montajes, cargarMontajes, crearMontaje, borrarMontaje
   }
 }

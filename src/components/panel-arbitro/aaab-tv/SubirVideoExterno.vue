@@ -30,7 +30,7 @@
           </div>
           <template v-else>
             <div class="marco-video">
-              <video :src="urlPrevia" controls playsinline preload="metadata" @loadedmetadata="alCargarMetadatos"></video>
+              <video :src="urlPrevia" controls playsinline preload="metadata" @loadedmetadata="alCargarMetadatos" @error="noSeVe = true"></video>
             </div>
             <div class="d-flex align-items-center justify-content-between gap-2 mt-2">
               <span class="small text-muted text-truncate">
@@ -43,6 +43,12 @@
             </div>
           </template>
           <p v-if="intento && !archivo" class="small text-danger mt-1 mb-0" role="alert">Elegí el video que querés subir.</p>
+          <div v-if="archivo && noSeVe" class="alert alert-warning small py-2 mt-2 mb-0" role="alert">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            Este navegador no puede mostrar este video (pasa con algunos videos de iPhone o WhatsApp, en HEVC o .mov).
+            <template v-if="conServidor">Igual podés subirlo: el servidor lo convierte para que se vea en cualquier dispositivo.</template>
+            <template v-else>En la maqueta no se puede usar: convertilo a MP4 (H.264) o probá desde Chrome en el celular.</template>
+          </div>
         </div>
 
         <!-- Datos -->
@@ -67,6 +73,16 @@
               <div class="invalid-feedback">Indicá la fecha.</div>
             </div>
           </div>
+
+          <label for="ext-decision" class="form-label small fw-bold mt-2">Decisión arbitral</label>
+          <select id="ext-decision" v-model="form.decision" class="form-select">
+            <option :value="null">Sin valorar</option>
+            <option v-for="(d, clave) in DECISIONES" :key="clave" :value="clave">{{ d.etiqueta }}</option>
+          </select>
+
+          <span class="form-label small fw-bold d-block mt-2">Árbitros involucrados</span>
+          <SelectorArbitros id="ext-arbitros" v-model="form.arbitros" />
+          <span class="small text-muted">Lo ven en "Mis clips" cuando se autoriza.</span>
         </div>
 
         <div class="col-12">
@@ -86,8 +102,10 @@
 
 <script setup>
 import { ref, reactive, computed, inject, onBeforeUnmount } from 'vue'
-import { useAaabTv, formatearTiempo, idGrupoDeClave } from '@/composables/useAaabTv'
+import { useAaabTv, formatearTiempo, idGrupoDeClave, DECISIONES } from '@/composables/useAaabTv'
 import SelectorCanales from '@/components/panel-arbitro/aaab-tv/SelectorCanales.vue'
+import SelectorArbitros from '@/components/SelectorArbitros.vue'
+import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 
 // Pestaña "Subir video" del Estudio (solo observadores y coordinadores): publica un video que llegó
 // por fuera del análisis (ej. por WhatsApp) entero, como un solo clip, con el mismo circuito de canales.
@@ -99,7 +117,10 @@ const { publicarVideoExterno, progresoSubida, publicaAutorizado } = useAaabTv()
 const ETIQUETA_EXTERNO = { nombre: 'Video externo', color: 'gris' }
 
 const hoy = () => new Date().toISOString().slice(0, 10)
-const formVacio = () => ({ titulo: '', descripcion: '', partido: '', fecha: hoy(), canales: ['publico'] })
+const formVacio = () => ({ titulo: '', descripcion: '', partido: '', fecha: hoy(), canales: ['publico'], decision: null, arbitros: [] })
+const conServidor = AAAB_TV_CON_SERVIDOR
+// El navegador no puede mostrar el video (HEVC, .mov): con servidor se sube igual y la VPS lo convierte
+const noSeVe = ref(false)
 
 const inputArchivo = ref(null)
 const archivo = ref(null)
@@ -126,10 +147,13 @@ const elegirArchivo = (e) => {
   archivo.value = elegido
   urlPrevia.value = URL.createObjectURL(elegido)
   duracion.value = 0
+  noSeVe.value = false
 }
 
 const alCargarMetadatos = (e) => {
   duracion.value = Math.floor(e.target.duration || 0)
+  // Se abrió pero sin imagen o sin duración: el navegador no lo puede decodificar
+  noSeVe.value = !duracion.value || !e.target.videoWidth
 }
 
 const textoBoton = computed(() => {
@@ -142,6 +166,11 @@ const publicar = async () => {
   intento.value = true
   const valido = archivo.value && form.titulo.trim() && form.fecha && form.canales.length
   if (!valido || subiendo.value) return
+  // En la maqueta se necesita la duración que lee el navegador; con servidor la calcula la VPS
+  if (noSeVe.value && !conServidor) {
+    toast({ tipo: 'warning', titulo: 'Formato no compatible', mensaje: 'Convertí el video a MP4 (H.264) para usarlo en la maqueta.' })
+    return
+  }
   subiendo.value = true
   try {
     const res = await publicarVideoExterno({
@@ -153,7 +182,9 @@ const publicar = async () => {
       partido: form.partido,
       fecha: form.fecha,
       duracion: duracion.value,
-      destinos: form.canales.map(idGrupoDeClave)
+      destinos: form.canales.map(idGrupoDeClave),
+      decision: form.decision,
+      arbitros: form.arbitros
     })
     if (!res?.ok) {
       toast({ tipo: 'danger', titulo: 'No se pudo subir', mensaje: res?.message || 'Intentá de nuevo.' })
@@ -166,6 +197,7 @@ const publicar = async () => {
     liberarPrevia()
     archivo.value = null
     duracion.value = 0
+    noSeVe.value = false
     Object.assign(form, formVacio())
     intento.value = false
     emit('publicado')

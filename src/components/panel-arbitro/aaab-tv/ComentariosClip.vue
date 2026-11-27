@@ -43,8 +43,8 @@
 
 <script setup>
 import { ref, watch, inject } from 'vue'
-import { auth } from '@/api/auth'
 import { useAaabTv } from '@/composables/useAaabTv'
+import { esUsuarioActual } from '@/api/aaabTvClips'
 
 // Comentarios de un clip. Los ve y escribe todo el que ve el clip; el coordinador general
 // (moderar = true) además puede borrar cualquiera. Cada uno puede borrar los suyos.
@@ -55,7 +55,6 @@ const props = defineProps({
 
 const toast = inject('toast')
 const { listarComentarios, agregarComentario, borrarComentario } = useAaabTv()
-const usuario = auth.getUser() || {}
 
 const comentarios = ref([])
 const cargando = ref(false)
@@ -70,7 +69,8 @@ const fechaHora = (iso) => {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
-const puedeBorrar = (c) => props.moderar || (c.idAutor !== null && String(c.idAutor) === String(usuario.id))
+// Autor = mismo id y mismo tipo de usuario (un árbitro y una autoridad pueden compartir id)
+const puedeBorrar = (c) => props.moderar || esUsuarioActual(c.idAutor, c.tipoAutor)
 
 const cargar = async () => {
   cargando.value = true

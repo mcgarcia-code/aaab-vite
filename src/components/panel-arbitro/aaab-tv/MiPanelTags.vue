@@ -1,14 +1,22 @@
 <template>
   <div>
     <p class="text-muted small mb-3">
-      Elegí qué situaciones vas a marcar. Cada tag genera un clip de <strong>{{ VENTANA_SEGUNDOS }} segundos antes y {{ VENTANA_SEGUNDOS }} después</strong>.
+      Elegí qué situaciones vas a marcar. Cada tag genera un clip de <strong>{{ VENTANA_SEGUNDOS }} segundos antes y {{ VENTANA_SEGUNDOS }} después</strong>;
+      en "Analizar" podés ajustar el inicio y el fin de cada clip.
     </p>
 
     <section class="lista-botones mb-3">
       <header class="lista-encabezado">
         <h3 class="m-0">Mis botones</h3>
         <span class="badge bg-light text-dark border">{{ botones.length }}</span>
+        <span v-if="estadoPanel === 'guardando'" class="small text-muted ms-auto">
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Guardando...
+        </span>
       </header>
+      <div v-if="estadoPanel === 'error'" class="alert alert-danger small py-2 m-2 d-flex flex-wrap align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> No se pudieron guardar los cambios del panel.
+        <button type="button" class="btn btn-sm btn-danger fw-bold ms-auto" @click="guardarPanelAhora">Reintentar</button>
+      </div>
 
       <!-- Una sola lista: en celular una columna, desde tablet dos -->
       <ul v-if="botones.length" class="list-unstyled m-0 p-2 grilla-filas">
@@ -65,7 +73,7 @@
 import { reactive, ref } from 'vue'
 import { useAaabTv, COLORES_TAG, VENTANA_SEGUNDOS, colorTag } from '@/composables/useAaabTv'
 
-const { botones, agregarBoton, editarBoton, borrarBoton, restablecerBotones } = useAaabTv()
+const { botones, agregarBoton, editarBoton, borrarBoton, restablecerBotones, estadoPanel, guardarPanelAhora } = useAaabTv()
 
 const formVacio = () => ({ nombre: '', color: 'rojo' })
 const form = reactive(formVacio())

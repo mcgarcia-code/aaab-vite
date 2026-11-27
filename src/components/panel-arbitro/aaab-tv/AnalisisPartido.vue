@@ -60,7 +60,8 @@
           <template v-else>
             <div class="marco-video">
               <video ref="videoRef" :src="video.url" controls playsinline preload="metadata"
-                     @loadedmetadata="alCargarMetadatos" @timeupdate="alAvanzarVideo" @play="reproduciendo = true" @pause="reproduciendo = false"></video>
+                     @loadedmetadata="alCargarMetadatos" @timeupdate="alAvanzarVideo" @play="reproduciendo = true" @pause="reproduciendo = false"
+                     @error="formatoNoCompatible = true"></video>
               <span v-if="ultimoTag" class="aviso-tag" :style="{ background: colorTag(ultimoTag.color).solido }">
                 <i class="bi bi-bookmark-fill" aria-hidden="true"></i> {{ ultimoTag.nombre }} · {{ formatearTiempo(ultimoTag.segundo ?? ultimoTag.segundoReloj) }}
               </span>
@@ -78,8 +79,14 @@
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2">
               <div class="d-flex flex-wrap align-items-center gap-1">
                 <button type="button" class="btn btn-sm btn-light border" title="Atrás 5 s (←)" @click="mover(-5)">-5s</button>
+                <button type="button" class="btn btn-sm btn-light border" title="Cuadro anterior (,)" aria-label="Cuadro anterior" @click="pasoCuadro(-1)">
+                  <i class="bi bi-skip-start-fill" aria-hidden="true"></i>
+                </button>
                 <button type="button" class="btn btn-sm btn-dark fw-bold px-3" :aria-label="reproduciendo ? 'Pausar' : 'Reproducir'" @click="alternarReproduccion">
                   <i :class="['bi', reproduciendo ? 'bi-pause-fill' : 'bi-play-fill']" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-light border" title="Cuadro siguiente (.)" aria-label="Cuadro siguiente" @click="pasoCuadro(1)">
+                  <i class="bi bi-skip-end-fill" aria-hidden="true"></i>
                 </button>
                 <button type="button" class="btn btn-sm btn-light border" title="Adelante 5 s (→)" @click="mover(5)">+5s</button>
                 <span class="tiempo">{{ formatearTiempo(tiempoActual) }} / {{ formatearTiempo(video.duracion) }}</span>
@@ -94,8 +101,17 @@
               </div>
             </div>
             <p class="small text-muted mt-1 mb-0 text-truncate"><i class="bi bi-file-earmark-play" aria-hidden="true"></i> {{ video.nombre }}</p>
+            <div v-if="formatoNoCompatible" class="alert alert-warning small py-2 mt-2 mb-0" role="alert">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              Este navegador no puede reproducir este video (pasa con algunos videos de iPhone o WhatsApp, en HEVC o .mov).
+              Probá abrirlo desde Chrome en el celular, o convertilo a MP4 (H.264) antes de analizarlo.
+            </div>
           </template>
         </section>
+
+        <!-- Otras cámaras del mismo partido (solo en modo video, con la principal cargada) -->
+        <CamarasPartido v-if="sesion.modo === 'video' && video.url" :principal="videoRef" :reproduciendo="reproduciendo"
+                        :tiempo="tiempoActual" :velocidad="velocidad" />
 
         <!-- Cronómetro (modo en vivo) -->
         <section v-if="sesion.modo === 'vivo'" class="bloque bloque-oscuro mb-3">
@@ -127,6 +143,7 @@
             si vas a cargar el partido completo en un solo video, dejalo correr también en el entretiempo;
             si lo vas a cargar por tiempos, al terminar el primer tiempo guardá el evento y empezá uno nuevo
             para el segundo, con el cronómetro desde cero en su pitazo inicial.
+            Podés pausarlo en un tiempo muerto: los clips se ubican igual, con la hora real desde el pitazo.
             Lo que marques queda guardado en este dispositivo aunque se corte internet.
           </p>
 
@@ -164,7 +181,7 @@
         <section class="bloque">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <h3 class="titulo-bloque m-0">Marcar situación</h3>
-            <span class="small text-muted d-none d-md-inline">Video: <kbd class="tecla">Espacio</kbd> play/pausa · <kbd class="tecla">←</kbd><kbd class="tecla">→</kbd> 5 s</span>
+            <span class="small text-muted d-none d-md-inline">Video: <kbd class="tecla">Espacio</kbd> play/pausa · <kbd class="tecla">←</kbd><kbd class="tecla">→</kbd> 5 s · <kbd class="tecla">,</kbd><kbd class="tecla">.</kbd> cuadro</span>
           </div>
           <p v-if="motivoPadDeshabilitado" class="small text-muted mb-2"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ motivoPadDeshabilitado }}</p>
           <!-- Celular y app: botones cuadrados, 3 por fila. Escritorio: botones anchos -->
@@ -188,6 +205,15 @@
             <button v-if="sesion.tags.length" type="button" class="btn btn-sm btn-link text-danger fw-bold p-0" @click="confirmarNuevaSesion">Nueva sesión</button>
           </div>
 
+          <!-- Resumen del evento: cuántas veces se marcó cada situación -->
+          <div v-if="resumenEvento.length" class="resumen-evento mb-2" aria-label="Resumen del evento">
+            <div v-for="r in resumenEvento" :key="r.nombre" class="fila-resumen" :title="`${r.nombre}: ${r.cantidad}`">
+              <span class="nombre-resumen text-truncate">{{ r.nombre }}</span>
+              <span class="pista-resumen"><span class="barra-resumen" :style="{ width: (r.cantidad / maximoResumen) * 100 + '%' }"></span></span>
+              <span class="cantidad-resumen">{{ r.cantidad }}</span>
+            </div>
+          </div>
+
           <div v-if="tagsSinSincronizar.length" class="alert alert-warning small py-2 mb-2">
             {{ tagsSinSincronizar.length }} {{ tagsSinSincronizar.length === 1 ? 'tag marcado en vivo' : 'tags marcados en vivo' }} sin sincronizar con el video.
           </div>
@@ -206,7 +232,7 @@
                   </div>
                   <div class="tiempo-clip">
                     <template v-if="t.segundo !== null">
-                      {{ formatearTiempo(limitesClip(t.segundo, video.duracion).inicio) }} – {{ formatearTiempo(limitesClip(t.segundo, video.duracion).fin) }}
+                      {{ formatearTiempo(limitesDeTag(t, video.duracion).inicio) }} – {{ formatearTiempo(limitesDeTag(t, video.duracion).fin) }}
                     </template>
                     <template v-else>Cronómetro {{ formatearTiempo(t.segundoReloj) }} · sin sincronizar</template>
                   </div>
@@ -217,8 +243,12 @@
                 <button type="button" class="btn btn-sm btn-dark" :disabled="!video.url || t.segundo === null" :aria-label="`Ver clip ${t.titulo}`" title="Ver clip" @click="verClip(t)">
                   <i class="bi bi-play-fill" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="btn btn-sm btn-light border" :disabled="t.segundo === null" aria-label="Mover 1 segundo antes" title="1 s antes" @click="moverTag(t.id, -1)">-1s</button>
-                <button type="button" class="btn btn-sm btn-light border" :disabled="t.segundo === null" aria-label="Mover 1 segundo después" title="1 s después" @click="moverTag(t.id, 1)">+1s</button>
+                <button type="button" class="btn btn-sm btn-light border" :disabled="t.segundo === null" aria-label="Mover el momento 1 segundo antes" title="Mover 1 s antes" @click="moverTag(t.id, -1)">-1s</button>
+                <button type="button" class="btn btn-sm btn-light border" :disabled="t.segundo === null" aria-label="Mover el momento 1 segundo después" title="Mover 1 s después" @click="moverTag(t.id, 1)">+1s</button>
+                <button type="button" class="btn btn-sm" :class="ajustando === t.id ? 'btn-dark' : 'btn-light border'" :disabled="t.segundo === null"
+                        :aria-expanded="ajustando === t.id" title="Ajustar inicio y fin" @click="ajustando = ajustando === t.id ? null : t.id">
+                  <i class="bi bi-scissors" aria-hidden="true"></i><span class="visually-hidden">Ajustar inicio y fin</span>
+                </button>
                 <button type="button" class="btn btn-sm btn-light border ms-auto" :disabled="!video.url || t.segundo === null || recortando"
                         :aria-label="`Descargar clip ${t.titulo}`" title="Descargar clip" @click="descargarClips([t])">
                   <i class="bi bi-download" aria-hidden="true"></i>
@@ -226,6 +256,18 @@
                 <button type="button" class="btn btn-sm btn-light border text-danger" :aria-label="`Borrar ${t.titulo}`" title="Borrar" @click="borrarTag(t.id)">
                   <i class="bi bi-trash3" aria-hidden="true"></i>
                 </button>
+              </div>
+              <!-- Ajuste del inicio y del fin del clip (segundos antes y después del momento marcado) -->
+              <div v-if="ajustando === t.id && t.segundo !== null" class="ajuste-clip mt-2">
+                <div v-for="campo in CAMPOS_AJUSTE" :key="campo.clave" class="d-flex align-items-center gap-1">
+                  <span class="small fw-bold etiqueta-ajuste">{{ campo.nombre }}</span>
+                  <button type="button" class="btn btn-sm btn-light border" :disabled="(t[campo.clave] ?? VENTANA_SEGUNDOS) <= AJUSTE_MINIMO"
+                          :aria-label="`${campo.nombre}: 1 segundo menos`" @click="ajustarTag(t.id, campo.clave, -1)">−</button>
+                  <span class="valor-ajuste">{{ t[campo.clave] ?? VENTANA_SEGUNDOS }} s</span>
+                  <button type="button" class="btn btn-sm btn-light border" :disabled="(t[campo.clave] ?? VENTANA_SEGUNDOS) >= AJUSTE_MAXIMO"
+                          :aria-label="`${campo.nombre}: 1 segundo más`" @click="ajustarTag(t.id, campo.clave, 1)">+</button>
+                </div>
+                <span class="small text-muted">Dura {{ formatearTiempo(limitesDeTag(t, video.duracion).duracion) }}</span>
               </div>
             </li>
           </ul>
@@ -243,7 +285,10 @@
           </div>
 
           <div v-if="sesion.tags.length && puedePublicar" class="pie-clips">
-            <span class="small text-muted">{{ seleccionados.length }} para publicar · quedan pendientes hasta que los revise Desarrollo Arbitral</span>
+            <span class="small text-muted">
+              {{ seleccionados.length }} para publicar ·
+              {{ publicaAutorizado ? 'salen autorizados' : 'quedan pendientes hasta que los autorice el coordinador general' }}
+            </span>
             <button type="button" class="btn btn-danger rounded-pill fw-bold w-100" :disabled="!seleccionados.length" @click="abrirPublicar">
               <i class="bi bi-broadcast" aria-hidden="true"></i> Publicar en AAAB TV
             </button>
@@ -277,10 +322,16 @@
         <!-- Canales: el público y/o los de los grupos. El coordinador general autoriza cada uno por separado -->
         <SelectorCanales v-model="formPublicar.canales" class="mb-3" :invalido="intentoPublicar && !formPublicar.canales.length" />
 
+        <p v-if="camarasSincronizadas.length" class="small text-muted mb-3">
+          <i class="bi bi-camera-video" aria-hidden="true"></i>
+          Cada clip lleva también {{ camarasSincronizadas.length === 1 ? 'el ángulo de' : 'los ángulos de' }}
+          {{ camarasSincronizadas.map(c => c.nombre).join(', ') }}.
+        </p>
+
         <div v-for="(c, i) in formPublicar.clips" :key="c.id" class="clip-publicar">
           <div class="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
             <span class="badge-tag" :style="{ background: colorTag(c.color).fondo, color: colorTag(c.color).texto }">{{ i + 1 }}. {{ c.nombre }}</span>
-            <span class="small text-muted">{{ formatearTiempo(limitesClip(c.segundo, video.duracion).inicio) }} – {{ formatearTiempo(limitesClip(c.segundo, video.duracion).fin) }}</span>
+            <span class="small text-muted">{{ formatearTiempo(limitesDeTag(c, video.duracion).inicio) }} – {{ formatearTiempo(limitesDeTag(c, video.duracion).fin) }}</span>
           </div>
           <label :for="'pub-titulo-' + c.id" class="form-label small fw-bold">Título *</label>
           <input :id="'pub-titulo-' + c.id" v-model="c.titulo" type="text" maxlength="100" class="form-control mb-2"
@@ -289,6 +340,20 @@
           <label :for="'pub-desc-' + c.id" class="form-label small fw-bold">Descripción</label>
           <textarea :id="'pub-desc-' + c.id" v-model="c.descripcion" rows="2" maxlength="600" class="form-control"
                     placeholder="Qué pasó y qué dice el reglamento"></textarea>
+          <div class="row g-2 mt-1">
+            <div class="col-12 col-md-5">
+              <label :for="'pub-decision-' + c.id" class="form-label small fw-bold">Decisión arbitral</label>
+              <select :id="'pub-decision-' + c.id" v-model="c.decision" class="form-select">
+                <option :value="null">Sin valorar</option>
+                <option v-for="(d, clave) in DECISIONES" :key="clave" :value="clave">{{ d.etiqueta }}</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-7">
+              <span class="form-label small fw-bold d-block">Árbitros involucrados</span>
+              <SelectorArbitros v-model="c.arbitros" :id="'pub-arbitros-' + c.id" />
+              <span class="small text-muted">Lo ven en "Mis clips" cuando se autoriza.</span>
+            </div>
+          </div>
         </div>
       </form>
 
@@ -361,19 +426,21 @@ import { crearZip, descargarBlob } from '@/utils/zip'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import {
-  useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesClip, idGrupoDeClave
+  useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesDeTag, idGrupoDeClave, DECISIONES, AJUSTE_MINIMO, AJUSTE_MAXIMO
 } from '@/composables/useAaabTv'
 import { useRecorteClips } from '@/composables/useRecorteClips'
 import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 import SelectorCanales from '@/components/panel-arbitro/aaab-tv/SelectorCanales.vue'
+import CamarasPartido from '@/components/panel-arbitro/aaab-tv/CamarasPartido.vue'
+import SelectorArbitros from '@/components/SelectorArbitros.vue'
 
 const emit = defineEmits(['publicado'])
 const toast = inject('toast')
 const notificar = inject('notificar')
 
 const {
-  botones, sesion, video, segundosReloj, tagsOrdenados, tagsSinSincronizar,
-  cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag, puedePublicar,
+  botones, sesion, video, camaras, segundosReloj, tagsOrdenados, tagsSinSincronizar,
+  cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag, ajustarTag, puedePublicar,
   iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips, progresoSubida, publicaAutorizado,
   eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento
 } = useAaabTv()
@@ -381,6 +448,26 @@ const {
 const { recortando, progreso, recortar } = useRecorteClips()
 
 const VELOCIDADES = [0.5, 1, 2]
+// Cuadro a cuadro: 1/30 de segundo (los navegadores no informan los cuadros por segundo del video)
+const CUADRO = 1 / 30
+const CAMPOS_AJUSTE = [
+  { clave: 'antes', nombre: 'Antes' },
+  { clave: 'despues', nombre: 'Después' }
+]
+
+// Tag cuyo inicio y fin se está ajustando (uno a la vez)
+const ajustando = ref(null)
+// El navegador no pudo leer el video elegido (formato no compatible)
+const formatoNoCompatible = ref(false)
+const camarasSincronizadas = computed(() => camaras.value.filter(c => c.desfase !== null))
+
+// Resumen del evento: cuántas veces se marcó cada situación, de más a menos
+const resumenEvento = computed(() => {
+  const cuentas = new Map()
+  sesion.tags.forEach(t => cuentas.set(t.nombre, (cuentas.get(t.nombre) || 0) + 1))
+  return [...cuentas].map(([nombre, cantidad]) => ({ nombre, cantidad })).sort((a, b) => b.cantidad - a.cantidad)
+})
+const maximoResumen = computed(() => Math.max(1, ...resumenEvento.value.map(r => r.cantidad)))
 
 // ─── Video ──────────────────────────────────────────────────
 const videoRef = ref(null)
@@ -399,6 +486,7 @@ const elegirVideo = (e) => {
     toast({ tipo: 'warning', titulo: 'Archivo no válido', mensaje: 'Elegí un archivo de video (MP4).' })
     return
   }
+  formatoNoCompatible.value = false
   cargarVideo(archivo)
   tiempoActual.value = 0
   if (sesion.modo === 'vivo') mostrarVideoEnVivo.value = true
@@ -406,7 +494,17 @@ const elegirVideo = (e) => {
 
 const alCargarMetadatos = () => {
   video.duracion = Math.floor(videoRef.value?.duration || 0)
+  // Hay archivos que se abren pero el navegador no puede decodificar: sin duración ni imagen
+  formatoNoCompatible.value = !video.duracion || !videoRef.value?.videoWidth
   if (videoRef.value) videoRef.value.playbackRate = velocidad.value
+}
+
+const pasoCuadro = (sentido) => {
+  const v = videoRef.value
+  if (!v) return
+  v.pause()
+  finPrevia.value = null
+  v.currentTime = Math.min(Math.max(0, v.currentTime + sentido * CUADRO), v.duration || 0)
 }
 
 const alAvanzarVideo = () => {
@@ -451,7 +549,7 @@ const saltarConClick = (e) => {
 
 const marcasLinea = computed(() =>
   sesion.tags.filter(t => t.segundo !== null && video.duracion).map(t => {
-    const { inicio, fin } = limitesClip(t.segundo, video.duracion)
+    const { inicio, fin } = limitesDeTag(t, video.duracion)
     return {
       id: t.id,
       titulo: `${t.titulo} · ${formatearTiempo(inicio)} – ${formatearTiempo(fin)}`,
@@ -466,7 +564,7 @@ const verClip = (t) => {
     if (sesion.modo === 'vivo') mostrarVideoEnVivo.value = true
     return
   }
-  const { inicio, fin } = limitesClip(t.segundo, video.duracion)
+  const { inicio, fin } = limitesDeTag(t, video.duracion)
   v.currentTime = inicio
   finPrevia.value = fin
   v.play().catch(() => {})
@@ -642,7 +740,7 @@ const pedirBorrarEvento = (ev) => {
 const clipsDescargables = computed(() => tagsOrdenados.value.filter(t => t.segundo !== null))
 
 const nombreClip = (t, numero) => {
-  const { inicio } = limitesClip(t.segundo, video.duracion)
+  const { inicio } = limitesDeTag(t, video.duracion)
   const mm = String(Math.floor(inicio / 60)).padStart(2, '0')
   const ss = String(Math.floor(inicio % 60)).padStart(2, '0')
   return `${String(numero).padStart(2, '0')}-${slug(t.titulo || t.nombre) || 'clip'}-${mm}m${ss}s`
@@ -655,7 +753,7 @@ const descargarClips = async (lista) => {
     return
   }
   const clips = lista.map(t => {
-    const { inicio, duracion } = limitesClip(t.segundo, video.duracion)
+    const { inicio, duracion } = limitesDeTag(t, video.duracion)
     const numero = clipsDescargables.value.findIndex(c => c.id === t.id) + 1
     return { nombre: nombreClip(t, numero), inicio, duracion }
   })
@@ -697,7 +795,8 @@ const abrirPublicar = () => {
   }
   formPublicar.partido = sesion.partido
   formPublicar.fecha = sesion.fecha
-  formPublicar.clips = seleccionados.value.map(t => ({ ...t }))
+  // Los tags viejos no tienen valoración ni árbitros: se completan para el formulario
+  formPublicar.clips = seleccionados.value.map(t => ({ ...t, decision: t.decision ?? null, arbitros: [...(t.arbitros || [])] }))
   intentoPublicar.value = false
   mostrarPublicar.value = true
 }
@@ -743,7 +842,10 @@ const alPresionarTecla = (e) => {
     return
   }
   if (e.key === 'ArrowLeft' && videoRef.value) { e.preventDefault(); mover(-5); return }
-  if (e.key === 'ArrowRight' && videoRef.value) { e.preventDefault(); mover(5) }
+  if (e.key === 'ArrowRight' && videoRef.value) { e.preventDefault(); mover(5); return }
+  // Cuadro a cuadro: coma atrás, punto adelante
+  if (e.key === ',' && videoRef.value) { e.preventDefault(); pasoCuadro(-1); return }
+  if (e.key === '.' && videoRef.value) { e.preventDefault(); pasoCuadro(1) }
 }
 
 onMounted(() => window.addEventListener('keydown', alPresionarTecla))
@@ -1000,6 +1102,23 @@ onBeforeUnmount(() => {
   padding-top: 10px;
   margin-top: 4px;
 }
+.ajuste-clip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--o-fondo-suave, #f8fafc);
+}
+.etiqueta-ajuste { min-width: 52px; color: var(--o-texto-medio, #475569); }
+.valor-ajuste { min-width: 36px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+.resumen-evento { display: flex; flex-direction: column; gap: 4px; }
+.fila-resumen { display: grid; grid-template-columns: minmax(0, 7rem) 1fr 2rem; align-items: center; gap: 8px; font-size: 0.75rem; }
+.nombre-resumen { color: var(--o-texto-medio, #475569); font-weight: 600; }
+.pista-resumen { height: 8px; border-radius: 4px; background: var(--o-chip, #e2e8f0); overflow: hidden; }
+.barra-resumen { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--o-texto-medio, #475569); }
+.cantidad-resumen { text-align: right; font-weight: 800; color: var(--o-texto, #0f172a); font-variant-numeric: tabular-nums; }
 .clip-publicar {
   border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 12px;

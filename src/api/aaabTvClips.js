@@ -3,7 +3,8 @@ import { auth } from '@/api/auth'
 import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 
 // =====================================================================
-// AAAB TV · panel de botones, canales, clips, moderación, comentarios, listas y publicación.
+// AAAB TV · panel de botones, canales, clips, autorización, comentarios, dibujos, listas,
+// colecciones oficiales, montajes y publicación.
 //
 // Igual que los eventos (api/aaabTvEventos.js), dos formas con las mismas funciones:
 // - Con servidor (VITE_AAAB_TV_SERVIDOR=true): los datos van al backend del hosting
@@ -15,18 +16,22 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 // por separado: puede quedar autorizado en un canal y no en otro. Lo que publica el propio
 // coordinador general (o el admin) sale autorizado: eso lo decide el backend por el token.
 //
-// Contrato con el hosting (entity 'aaab_tv'; el usuario y el rol salen del token):
+// Usuarios: los árbitros vienen de registro_arbitro y las autoridades de usuarios_admin, así que un
+// mismo id puede ser de los dos. Por eso todo lo que tiene autor lleva idAutor + tipoAutor.
+//
+// Contrato con el hosting (entity 'aaab_tv'; el usuario, su tipo y su rol salen del token):
 //   GET  obtenerPanel        {}                                   → [{ id, nombre, color }] | null
 //   POST guardarPanel        { botones }                          → botones guardados
 //   GET  listarCanales       {}                                   → [{ idGrupo, nombre }]: el público y el del grupo del árbitro
 //                                                                   (el coordinador, todos)
-//   GET  listarClips         {}                                   → clips autorizados en los canales que ve, más los propios
-//                                                                   en cualquier estado
-// Avisos (los genera el backend): al autor cuando se autoriza un canal de su clip y cuando le comentan el clip
+//   GET  listarClips         {}                                   → clips autorizados en los canales que ve, los propios en
+//                                                                   cualquier estado y aquellos donde es árbitro involucrado
+//                                                                   (si están autorizados en algún canal)
 //   POST borrarClip          { id }                               → true (solo el autor, mientras todo esté pendiente)
 //   GET  listarClipsAdmin    {}                                   → todos los clips (coordinador general)
-//   POST editarClip          { id, titulo, descripcion, destinos: [{ idGrupo, estado }] } → clip actualizado
+//   POST editarClip          { id, titulo, descripcion, decision, arbitros, destinos: [{ idGrupo, estado }] } → clip
 //   POST cambiarEstadoDestino { id, idGrupo, estado }             → clip actualizado
+//   POST guardarAnotaciones  { idClip, anotaciones }              → clip actualizado (el autor o el coordinador general)
 //   GET  listarComentarios   { idClip }                           → [comentario]
 //   POST agregarComentario   { idClip, texto }                    → comentario
 //   POST borrarComentario    { id }                               → true (el autor, o el coordinador general)
@@ -34,22 +39,39 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   POST guardarLista        { id?, nombre }                      → lista (alta o cambio de nombre)
 //   POST borrarLista         { id }                               → true
 //   POST cambiarClipEnLista  { idLista, idClip, incluir }         → lista actualizada
+//   GET  listarColecciones   {}                                   → colecciones oficiales de los canales que ve
+//   GET  listarColeccionesAdmin {}                                → todas (coordinador general)
+//   POST guardarColeccion    { id?, nombre, descripcion, idGrupo, idsClips }  → colección (coordinador general)
+//   POST borrarColeccion     { id }                               → true (coordinador general)
+//   GET  listarMontajes      {}                                   → montajes del usuario
+//   POST crearMontaje        { titulo, idsClips }                 → montaje en 'procesando' (la VPS une los clips)
+//   POST borrarMontaje       { id }                               → true
 //   POST iniciarSubida       { nombre, tamanio, tipo, huella }    → { idVideo, urlVps, tokenSubida, tamanioParte, listo }
 //   POST publicarClips       { idVideo, partido, fecha, idEvento, destinos: [idGrupo|null],
-//                              clips: [{ idTag, segundo, titulo, descripcion, etiqueta, color }] } → { cantidad, clips }
-//   POST publicarVideoExterno { idVideo, titulo, descripcion, etiqueta, color, partido, fecha, destinos }
+//                              camaras: [{ idVideo, nombre, desfase }],
+//                              clips: [{ idTag, inicio, fin, titulo, descripcion, etiqueta, color, decision, arbitros: [id] }] }
+//                                                                → { cantidad, clips }
+//   POST publicarVideoExterno { idVideo, titulo, descripcion, etiqueta, color, partido, fecha, destinos, decision, arbitros }
 //                                                                → { cantidad: 1, clips: [clip] } (el video entero es el clip)
 //   GET  listarGruposPublicacion {}                              → [{ idGrupo, nombre }] todos los grupos activos
 //                                                                   (rol 2 y 4, coordinador general y admin: para elegir dónde publicar)
+// Avisos (los genera el backend): al autor cuando se autoriza un canal de su clip y cuando le comentan el clip;
+// a los árbitros involucrados cuando un clip donde aparecen queda autorizado; al usuario cuando su montaje está listo
 // Contrato con la VPS (entity 'videos', Authorization: Bearer <tokenSubida>):
 //   POST estadoSubida        { idVideo }                          → { partesRecibidas: [numero] }
 //   POST subirParte          FormData: idVideo, numero, parte     → { numero }
 //   POST completarSubida     { idVideo }                          → { idVideo, duracion }
-// Clip: { id, titulo, descripcion, etiqueta, color, partido, fecha, inicio, fin, origen, idAutor, autor, publicadoEl,
-//         urlVideo, urlMiniatura, procesado, destinos: [{ idGrupo, nombre, estado }] }
+// Clip: { id, titulo, descripcion, etiqueta, color, partido, fecha, inicio, fin, origen, idAutor, tipoAutor, autor,
+//         publicadoEl, urlVideo, urlHls, urlMiniatura, procesado, decision, arbitros: [{ id, nombre }],
+//         angulos: [{ nombre, urlVideo, urlHls }], anotaciones: [anotación], destinos: [{ idGrupo, nombre, estado }] }
 //   origen: 'analisis' (cortado de un partido) | 'externo' (video subido entero desde "Subir video")
+//   decision: 'correcta' | 'incorrecta' | 'a_revisar' | null (valoración de la decisión arbitral del clip)
 //   estado de cada destino: 'pendiente' | 'autorizado' | 'no_autorizado'
-// Comentario: { id, idClip, idAutor, autor, esCoordinacion, texto, creadoEl }
+//   anotación (dibujo sobre el video): { id, segundo, formas: [{ tipo: 'flecha'|'linea'|'circulo'|'libre', color, puntos: [[x, y]] }] }
+//     segundo: dentro del clip (desde su inicio); x e y entre 0 y 1 (proporción del cuadro)
+// Comentario: { id, idClip, idAutor, tipoAutor, autor, esCoordinacion, texto, creadoEl }
+// Colección: { id, nombre, descripcion, idGrupo, nombreCanal, idsClips, actualizadoEl }
+// Montaje: { id, titulo, idsClips, estado: 'procesando'|'listo'|'error', urlVideo, creadoEl }
 // =====================================================================
 
 const ENTIDAD = 'aaab_tv'
@@ -66,6 +88,19 @@ export const publicaAutorizado = (usuario = auth.getUser() || {}) =>
   !!usuario.esAutoridad && ROLES_AUTORIDAD_PUBLICAN.includes(String(usuario.rol || '').toLowerCase())
 export const esRolPublicador = (usuario = auth.getUser() || {}) =>
   publicaAutorizado(usuario) || (!usuario.esAutoridad && ROLES_PUBLICAN.includes(Number(usuario.rol)))
+
+// Tipo de usuario: 'admin' (usuarios_admin) o 'arbitro' (registro_arbitro)
+export const tipoUsuario = (usuario = auth.getUser() || {}) => (usuario.esAutoridad ? 'admin' : 'arbitro')
+// ¿Es el usuario logueado? Compara id y tipo (un id solo puede repetirse entre árbitros y autoridades)
+export const esUsuarioActual = (id, tipo = 'arbitro') => {
+  const usuario = auth.getUser() || {}
+  return id !== null && id !== undefined && String(id) === String(usuario.id) && (tipo || 'arbitro') === tipoUsuario(usuario)
+}
+// ¿El árbitro logueado está entre los involucrados del clip?
+export const estaInvolucrado = (clip) => {
+  const usuario = auth.getUser() || {}
+  return !usuario.esAutoridad && (clip.arbitros || []).some(a => String(a.id) === String(usuario.id))
+}
 
 export const nombreGrupo = (g) => (g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre)
 
@@ -88,7 +123,7 @@ const listarGrupos = async () => {
 // el mismo archivo elegido de nuevo da la misma huella, y la subida puede retomarse
 const huellaDe = (archivo) => `${archivo.name}|${archivo.size}|${archivo.lastModified}`
 
-// ─── Subida del video a la VPS, por partes ────────────────────
+// ─── Subida de un video a la VPS, por partes ──────────────────
 // alProgresar(fraccion 0..1). Devuelve { ok, payload: { idVideo }, message }
 const subirVideo = async (archivo, alProgresar) => {
   const pedirPermiso = () => api.post({
@@ -148,9 +183,25 @@ const subirVideo = async (archivo, alProgresar) => {
   return { ok: true, payload: { idVideo } }
 }
 
+// Sube varios videos uno detrás de otro (la cámara principal y las extra), con un solo progreso
+// pesado por tamaño. Devuelve { ok, payload: [idVideo, ...] en el mismo orden }
+const subirVideos = async (archivos, alProgresar) => {
+  const total = archivos.reduce((s, a) => s + a.size, 0) || 1
+  let hecho = 0
+  const ids = []
+  for (const archivo of archivos) {
+    const res = await subirVideo(archivo, (f) => alProgresar?.((hecho + f * archivo.size) / total))
+    if (!res?.ok) return res
+    hecho += archivo.size
+    ids.push(res.payload.idVideo)
+  }
+  return { ok: true, payload: ids }
+}
+
 // ─── Con servidor ─────────────────────────────────────────────
 const pedir = (action, payload = {}) => api.get({ entity: ENTIDAD, action, payload })
 const enviar = (action, payload = {}) => api.post({ entity: ENTIDAD, action, payload })
+const idsDe = (arbitros) => (arbitros || []).map(a => a.id)
 
 const conServidor = {
   obtenerPanel: () => pedir('obtenerPanel'),
@@ -163,8 +214,10 @@ const conServidor = {
   borrarClip: (id) => enviar('borrarClip', { id }),
 
   listarClipsAdmin: async () => comoLista(await pedir('listarClipsAdmin')),
-  editarClip: ({ id, titulo, descripcion, destinos }) => enviar('editarClip', { id, titulo, descripcion, destinos }),
+  editarClip: ({ id, titulo, descripcion, decision, arbitros, destinos }) =>
+    enviar('editarClip', { id, titulo, descripcion, decision, arbitros: idsDe(arbitros), destinos }),
   cambiarEstadoDestino: (id, idGrupo, estado) => enviar('cambiarEstadoDestino', { id, idGrupo, estado }),
+  guardarAnotaciones: (idClip, anotaciones) => enviar('guardarAnotaciones', { idClip, anotaciones }),
 
   listarComentarios: async (idClip) => comoLista(await pedir('listarComentarios', { idClip })),
   agregarComentario: (idClip, texto) => enviar('agregarComentario', { idClip, texto }),
@@ -175,28 +228,42 @@ const conServidor = {
   borrarLista: (id) => enviar('borrarLista', { id }),
   cambiarClipEnLista: (idLista, idClip, incluir) => enviar('cambiarClipEnLista', { idLista, idClip, incluir }),
 
-  // archivo: el video elegido (un partido completo o un tiempo: lo que el usuario cargó en este evento)
-  publicarClips: async ({ archivo, partido, fecha, idEvento, destinos, clips, alProgresar }) => {
-    const subida = await subirVideo(archivo, alProgresar)
+  listarColecciones: async () => comoLista(await pedir('listarColecciones')),
+  listarColeccionesAdmin: async () => comoLista(await pedir('listarColeccionesAdmin')),
+  guardarColeccion: ({ id, nombre, descripcion, idGrupo, idsClips }) =>
+    enviar('guardarColeccion', { id: id ?? null, nombre, descripcion, idGrupo, idsClips }),
+  borrarColeccion: (id) => enviar('borrarColeccion', { id }),
+
+  listarMontajes: async () => comoLista(await pedir('listarMontajes')),
+  crearMontaje: ({ titulo, idsClips }) => enviar('crearMontaje', { titulo, idsClips }),
+  borrarMontaje: (id) => enviar('borrarMontaje', { id }),
+
+  // archivo: el video del evento (partido completo o un tiempo); camaras: [{ archivo, nombre, desfase }]
+  publicarClips: async ({ archivo, camaras = [], partido, fecha, idEvento, destinos, clips, alProgresar }) => {
+    const subida = await subirVideos([archivo, ...camaras.map(c => c.archivo)], alProgresar)
     if (!subida?.ok) return subida
+    const [idVideo, ...idsCamaras] = subida.payload
     return enviar('publicarClips', {
-      idVideo: subida.payload.idVideo,
+      idVideo,
       partido,
       fecha,
       idEvento: idEvento || null,
       destinos,
+      camaras: camaras.map((c, i) => ({ idVideo: idsCamaras[i], nombre: c.nombre, desfase: c.desfase })),
       clips: clips.map(c => ({
-        idTag: c.id, segundo: c.segundo, titulo: c.titulo, descripcion: c.descripcion, etiqueta: c.nombre, color: c.color
+        idTag: c.id, inicio: c.inicio, fin: c.fin, titulo: c.titulo, descripcion: c.descripcion,
+        etiqueta: c.nombre, color: c.color, decision: c.decision || null, arbitros: idsDe(c.arbitros)
       }))
     })
   },
 
   // Video externo (ej. una jugada que llegó por WhatsApp): se sube entero y es un solo clip
-  publicarVideoExterno: async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, destinos, alProgresar }) => {
+  publicarVideoExterno: async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, destinos, decision, arbitros, alProgresar }) => {
     const subida = await subirVideo(archivo, alProgresar)
     if (!subida?.ok) return subida
     return enviar('publicarVideoExterno', {
-      idVideo: subida.payload.idVideo, titulo, descripcion, etiqueta, color, partido, fecha, destinos
+      idVideo: subida.payload.idVideo, titulo, descripcion, etiqueta, color, partido, fecha, destinos,
+      decision: decision || null, arbitros: idsDe(arbitros)
     })
   },
 
@@ -205,31 +272,35 @@ const conServidor = {
 }
 
 // ─── Sin servidor (este navegador) ────────────────────────────
-// Los clips y comentarios se comparten entre los usuarios de este navegador (así se puede publicar
-// con uno y moderar con otro). El video local no se guarda: solo se ve en la sesión en la que se publicó.
-// Cada árbitro ve solo el canal público y el canal de su grupo (id_grupo de la sesión); el coordinador ve
-// todos los canales. Igual que con servidor. Los avisos al autor los genera el backend (acá no hay).
+// Los clips, comentarios y colecciones se comparten entre los usuarios de este navegador (así se puede
+// publicar con uno y autorizar con otro). El video local no se guarda: solo se ve en la sesión en la que
+// se publicó. Cada árbitro ve el canal público y el de su grupo (id_grupo de la sesión); el coordinador
+// ve todos. Los avisos los genera el backend (acá no hay) y los montajes no se arman (no hay videos).
 const CLAVE_CLIPS = 'aaabTv.clips'
 const CLAVE_COMENTARIOS = 'aaabTv.comentarios'
+const CLAVE_COLECCIONES = 'aaabTv.colecciones'
 const publico = (estado) => [{ idGrupo: null, nombre: NOMBRE_CANAL_PUBLICO, estado }]
 const CLIPS_EJEMPLO = [
   {
     id: 'ej-1', titulo: 'Descalificación por golpe en la cara al lanzador',
     descripcion: 'El defensor llega tarde al bloqueo y golpea con el antebrazo en la cara del lanzador en suspensión. Regla 8:5.',
     etiqueta: 'Red/Blue Card', color: 'rojo', partido: 'River vs. SAG Villa Ballester', fecha: '2026-11-15',
-    inicio: 1114, fin: 1130, idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-15T21:00:00', destinos: publico('autorizado')
+    inicio: 1114, fin: 1130, idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-15T21:00:00',
+    decision: 'correcta', destinos: publico('autorizado')
   },
   {
     id: 'ej-2', titulo: '2 minutos por agarre al pivote desde atrás',
     descripcion: 'El pivote gana la posición y el defensor lo toma de la cintura impidiendo el giro. 2 minutos y 7 metros.',
     etiqueta: '2 minutos', color: 'naranja', partido: 'Ferro vs. Dorrego', fecha: '2026-11-08',
-    inicio: 3367, fin: 3383, idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-08T22:00:00', destinos: publico('no_autorizado')
+    inicio: 3367, fin: 3383, idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-08T22:00:00',
+    decision: 'a_revisar', destinos: publico('no_autorizado')
   },
   {
     id: 'ej-3', titulo: 'Ventaja bien aplicada en el contraataque',
     descripcion: 'Falta leve en mitad de cancha: la pareja espera y el extremo convierte. Regla 13:2.',
     etiqueta: 'Play on', color: 'verde', partido: 'Sedalo vs. CID Moreno', fecha: '2026-11-01',
-    inicio: 1440, fin: 1456, idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-01T20:30:00', destinos: publico('pendiente')
+    inicio: 1440, fin: 1456, idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-01T20:30:00',
+    decision: 'correcta', destinos: publico('pendiente')
   }
 ]
 // Los ejemplos que ya estaban guardados toman la etiqueta actual (su moderación se respeta)
@@ -254,6 +325,7 @@ const escribir = (clave, valor) => {
 }
 const nuevoId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 const nombreDe = (u) => `${u.nombre || ''} ${u.apellido || ''}`.trim()
+const ahoraIso = () => new Date().toISOString()
 
 // Grupo del árbitro logueado (null si no tiene) y si puede entrar a un canal:
 // el coordinador entra a todos; el resto, al público y al de su grupo
@@ -278,8 +350,13 @@ const listarGruposMaqueta = async () => {
   const grupos = await listarGrupos()
   return { ok: true, payload: sumarGrupoPropio(grupos.ok ? grupos.payload : []) }
 }
+const nombreCanalDe = async (idGrupo) => {
+  if (idGrupo === null) return NOMBRE_CANAL_PUBLICO
+  const grupos = await listarGruposMaqueta()
+  return grupos.payload.find(g => g.idGrupo === idGrupo)?.nombre || `Grupo ${idGrupo}`
+}
 
-const enNavegador = (clavePanel, claveListas) => {
+const enNavegador = (clavePanel, claveListas, claveMontajes) => {
   const leerClips = () => {
     const guardados = leer(CLAVE_CLIPS, null)
     if (!guardados) return CLIPS_EJEMPLO.map(c => ({ ...c, destinos: c.destinos.map(d => ({ ...d })) }))
@@ -310,49 +387,46 @@ const enNavegador = (clavePanel, claveListas) => {
   const armarClip = async (datos, destinos) => {
     const autor = auth.getUser() || {}
     const estado = publicaAutorizado(autor) ? 'autorizado' : 'pendiente'
-    const grupos = await listarGruposMaqueta()
-    const nombreCanal = (idGrupo) => (idGrupo === null
-      ? NOMBRE_CANAL_PUBLICO
-      : grupos.payload?.find(g => g.idGrupo === idGrupo)?.nombre || `Grupo ${idGrupo}`)
+    const conNombre = await Promise.all(destinos.map(async idGrupo => ({ idGrupo, nombre: await nombreCanalDe(idGrupo), estado })))
     return {
-      id: nuevoId(), ...datos,
-      idAutor: autor.id ?? null, autor: nombreDe(autor), publicadoEl: new Date().toISOString(),
-      destinos: destinos.map(idGrupo => ({ idGrupo, nombre: nombreCanal(idGrupo), estado }))
+      id: nuevoId(), anotaciones: [], ...datos,
+      idAutor: autor.id ?? null, tipoAutor: tipoUsuario(autor), autor: nombreDe(autor), publicadoEl: ahoraIso(),
+      destinos: conNombre
     }
   }
   const guardarNuevos = (nuevos) => (escribir(CLAVE_CLIPS, [...nuevos, ...leerClips()])
     ? { ok: true, payload: { cantidad: nuevos.length, clips: nuevos } }
     : sinEspacio)
 
+  // Lo que ve un usuario en el portal: autorizados en sus canales, los propios, y los autorizados
+  // en cualquier canal donde es árbitro involucrado ("Mis clips")
+  const veClip = (c) =>
+    c.destinos.some(d => d.estado === 'autorizado' && puedeVerCanal(d.idGrupo)) ||
+    esUsuarioActual(c.idAutor, c.tipoAutor) ||
+    (estaInvolucrado(c) && c.destinos.some(d => d.estado === 'autorizado'))
+
+  const leerColecciones = () => leer(CLAVE_COLECCIONES, [])
+
   return {
     obtenerPanel: async () => ({ ok: true, payload: leer(clavePanel(), null) }),
     guardarPanel: async (botones) => (escribir(clavePanel(), botones) ? { ok: true, payload: botones } : sinEspacio),
 
-    // El canal público y el del grupo del árbitro
+    // El canal público y el del grupo del árbitro (el coordinador, todos)
     listarCanales: async () => {
       const grupos = await listarGruposMaqueta()
       return { ok: true, payload: [{ idGrupo: null, nombre: NOMBRE_CANAL_PUBLICO }, ...grupos.payload.filter(g => puedeVerCanal(g.idGrupo))] }
     },
     listarGruposPublicacion: listarGruposMaqueta,
 
-    // Los clips autorizados en un canal que el árbitro puede ver, y los propios aunque estén pendientes
-    listarClips: async () => {
-      const usuario = auth.getUser() || {}
-      return {
-        ok: true,
-        payload: leerClips().filter(c =>
-          c.destinos.some(d => d.estado === 'autorizado' && puedeVerCanal(d.idGrupo)) ||
-          (c.idAutor !== null && String(c.idAutor) === String(usuario.id)))
-      }
-    },
+    listarClips: async () => ({ ok: true, payload: leerClips().filter(veClip) }),
     borrarClip: async (id) => {
       escribir(CLAVE_CLIPS, leerClips().filter(c => c.id !== id))
       return { ok: true, payload: true }
     },
 
     listarClipsAdmin: async () => ({ ok: true, payload: leerClips() }),
-    editarClip: async ({ id, titulo, descripcion, destinos }) => modificarClip(id, (clip) => {
-      Object.assign(clip, { titulo, descripcion })
+    editarClip: async ({ id, titulo, descripcion, decision, arbitros, destinos }) => modificarClip(id, (clip) => {
+      Object.assign(clip, { titulo, descripcion, decision: decision || null, arbitros: arbitros || [] })
       clip.destinos = clip.destinos.map(d => {
         const cambio = destinos.find(x => String(x.idGrupo) === String(d.idGrupo))
         return cambio ? { ...d, estado: cambio.estado } : d
@@ -361,6 +435,7 @@ const enNavegador = (clavePanel, claveListas) => {
     cambiarEstadoDestino: async (id, idGrupo, estado) => modificarClip(id, (clip) => {
       clip.destinos = clip.destinos.map(d => (String(d.idGrupo) === String(idGrupo) ? { ...d, estado } : d))
     }),
+    guardarAnotaciones: async (idClip, anotaciones) => modificarClip(idClip, (clip) => { clip.anotaciones = anotaciones }),
 
     listarComentarios: async (idClip) => ({
       ok: true,
@@ -369,8 +444,8 @@ const enNavegador = (clavePanel, claveListas) => {
     agregarComentario: async (idClip, texto) => {
       const usuario = auth.getUser() || {}
       const comentario = {
-        id: nuevoId(), idClip, idAutor: usuario.id ?? null, autor: nombreDe(usuario),
-        esCoordinacion: !!usuario.esAutoridad, texto, creadoEl: new Date().toISOString()
+        id: nuevoId(), idClip, idAutor: usuario.id ?? null, tipoAutor: tipoUsuario(usuario), autor: nombreDe(usuario),
+        esCoordinacion: !!usuario.esAutoridad, texto, creadoEl: ahoraIso()
       }
       return escribir(CLAVE_COMENTARIOS, [...leer(CLAVE_COMENTARIOS, []), comentario])
         ? { ok: true, payload: comentario }
@@ -403,36 +478,68 @@ const enNavegador = (clavePanel, claveListas) => {
       return guardarListas(listas) ? { ok: true, payload: { ...lista } } : sinEspacio
     },
 
+    // Colecciones oficiales: las arma el coordinador general para un canal; las ve quien ve ese canal
+    listarColecciones: async () => ({ ok: true, payload: leerColecciones().filter(c => puedeVerCanal(c.idGrupo)) }),
+    listarColeccionesAdmin: async () => ({ ok: true, payload: leerColecciones() }),
+    guardarColeccion: async ({ id, nombre, descripcion, idGrupo, idsClips }) => {
+      const colecciones = leerColecciones()
+      const datos = { nombre, descripcion, idGrupo, nombreCanal: await nombreCanalDe(idGrupo), idsClips, actualizadoEl: ahoraIso() }
+      const existente = id ? colecciones.find(c => c.id === id) : null
+      const coleccion = existente ? Object.assign(existente, datos) : { id: nuevoId(), ...datos }
+      if (!existente) colecciones.push(coleccion)
+      return escribir(CLAVE_COLECCIONES, colecciones) ? { ok: true, payload: { ...coleccion } } : sinEspacio
+    },
+    borrarColeccion: async (id) => {
+      escribir(CLAVE_COLECCIONES, leerColecciones().filter(c => c.id !== id))
+      return { ok: true, payload: true }
+    },
+
+    // Montajes: en la maqueta no hay videos en el servidor, así que quedan con error explicado
+    listarMontajes: async () => ({ ok: true, payload: leer(claveMontajes(), []) }),
+    crearMontaje: async ({ titulo, idsClips }) => {
+      const montaje = {
+        id: nuevoId(), titulo, idsClips, estado: 'error', urlVideo: null, creadoEl: ahoraIso(),
+        error: 'En la maqueta no se arman montajes: los videos todavía no están en el servidor.'
+      }
+      return escribir(claveMontajes(), [montaje, ...leer(claveMontajes(), [])]) ? { ok: true, payload: montaje } : sinEspacio
+    },
+    borrarMontaje: async (id) => {
+      escribir(claveMontajes(), leer(claveMontajes(), []).filter(m => m.id !== id))
+      return { ok: true, payload: true }
+    },
+
     // En la maqueta no se sube nada: cada clip lleva inicio y fin dentro del video local
     publicarClips: async ({ partido, fecha, destinos, clips, alProgresar }) => {
       await new Promise(r => setTimeout(r, 900))
       alProgresar?.(1)
       const nuevos = await Promise.all(clips.map(c => armarClip({
         titulo: c.titulo, descripcion: c.descripcion, etiqueta: c.nombre, color: c.color,
-        partido, fecha, inicio: c.inicio, fin: c.fin, origen: 'analisis'
+        partido, fecha, inicio: c.inicio, fin: c.fin, origen: 'analisis',
+        decision: c.decision || null, arbitros: c.arbitros || []
       }, destinos)))
       return guardarNuevos(nuevos)
     },
 
     // Video externo: un solo clip con el video entero
-    publicarVideoExterno: async ({ titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos, alProgresar }) => {
+    publicarVideoExterno: async ({ titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos, decision, arbitros, alProgresar }) => {
       await new Promise(r => setTimeout(r, 900))
       alProgresar?.(1)
       const clip = await armarClip({
-        titulo, descripcion, etiqueta, color, partido, fecha, inicio: 0, fin: duracion, origen: 'externo'
+        titulo, descripcion, etiqueta, color, partido, fecha, inicio: 0, fin: duracion, origen: 'externo',
+        decision: decision || null, arbitros: arbitros || []
       }, destinos)
       return guardarNuevos([clip])
     },
 
-    // Si se modera o se comenta desde otra pestaña, se avisa para recargar
+    // Si se modera, se comenta o se arma una colección desde otra pestaña, se avisa para recargar
     alCambiarEnOtraPestana: (alCambiar) => {
       window.addEventListener('storage', (e) => {
-        if (e.key === CLAVE_CLIPS) alCambiar()
+        if ([CLAVE_CLIPS, CLAVE_COLECCIONES].includes(e.key)) alCambiar()
       })
     }
   }
 }
 
-// clavePanel / claveListas: funciones que devuelven la clave de localStorage del usuario logueado
-export const crearRepositorioClips = (clavePanel, claveListas) =>
-  AAAB_TV_CON_SERVIDOR ? conServidor : enNavegador(clavePanel, claveListas)
+// clavePanel / claveListas / claveMontajes: funciones que devuelven la clave de localStorage del usuario logueado
+export const crearRepositorioClips = (clavePanel, claveListas, claveMontajes) =>
+  AAAB_TV_CON_SERVIDOR ? conServidor : enNavegador(clavePanel, claveListas, claveMontajes)
