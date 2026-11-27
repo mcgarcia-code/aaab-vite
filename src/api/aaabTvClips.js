@@ -12,7 +12,8 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //
 // Canales: el canal público (idGrupo null) y uno por cada grupo de la asociación (idGrupo = id del grupo).
 // Un clip se publica en uno o más canales ("destinos") y el coordinador general autoriza cada uno
-// por separado: puede quedar autorizado en un canal y no en otro.
+// por separado: puede quedar autorizado en un canal y no en otro. Lo que publica el propio
+// coordinador general (o el admin) sale autorizado: eso lo decide el backend por el token.
 //
 // Contrato con el hosting (entity 'aaab_tv'; el usuario y el rol salen del token):
 //   GET  obtenerPanel        {}                                   → [{ id, nombre, color }] | null
@@ -39,7 +40,7 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //   POST publicarVideoExterno { idVideo, titulo, descripcion, etiqueta, color, partido, fecha, destinos }
 //                                                                → { cantidad: 1, clips: [clip] } (el video entero es el clip)
 //   GET  listarGruposPublicacion {}                              → [{ idGrupo, nombre }] todos los grupos activos
-//                                                                   (solo rol 2 y 4: para elegir dónde publicar)
+//                                                                   (rol 2 y 4, coordinador general y admin: para elegir dónde publicar)
 // Contrato con la VPS (entity 'videos', Authorization: Bearer <tokenSubida>):
 //   POST estadoSubida        { idVideo }                          → { partesRecibidas: [numero] }
 //   POST subirParte          FormData: idVideo, numero, parte     → { numero }
@@ -56,9 +57,15 @@ const ENTIDAD_VPS = 'videos'
 const INTENTOS_POR_PARTE = 3
 export const NOMBRE_CANAL_PUBLICO = 'Canal público'
 
-// Roles del panel árbitro que pueden publicar
+// Quiénes pueden publicar: en el panel árbitro, observadores y coordinadores; en el panel admin,
+// el coordinador general y el admin (que además autorizan)
 const ROLES_PUBLICAN = [2, 4]   // observador, coordinador
-export const esRolPublicador = (usuario = auth.getUser() || {}) => ROLES_PUBLICAN.includes(Number(usuario.rol))
+const ROLES_AUTORIDAD_PUBLICAN = ['coordinador general', 'admin']
+// El coordinador general y el admin: lo que publican sale autorizado en todos los canales elegidos
+export const publicaAutorizado = (usuario = auth.getUser() || {}) =>
+  !!usuario.esAutoridad && ROLES_AUTORIDAD_PUBLICAN.includes(String(usuario.rol || '').toLowerCase())
+export const esRolPublicador = (usuario = auth.getUser() || {}) =>
+  publicaAutorizado(usuario) || (!usuario.esAutoridad && ROLES_PUBLICAN.includes(Number(usuario.rol)))
 
 export const nombreGrupo = (g) => (g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre)
 
@@ -298,9 +305,11 @@ const enNavegador = (clavePanel, claveListas) => {
   const leerListas = () => leer(claveListas(), [])
   const guardarListas = (listas) => escribir(claveListas(), listas)
 
-  // Clip nuevo, pendiente en cada canal elegido (destinos: [idGrupo | null])
+  // Clip nuevo en cada canal elegido (destinos: [idGrupo | null]): pendiente, o autorizado
+  // si lo publica el coordinador general o el admin
   const armarClip = async (datos, destinos) => {
     const autor = auth.getUser() || {}
+    const estado = publicaAutorizado(autor) ? 'autorizado' : 'pendiente'
     const grupos = await listarGruposMaqueta()
     const nombreCanal = (idGrupo) => (idGrupo === null
       ? NOMBRE_CANAL_PUBLICO
@@ -308,7 +317,7 @@ const enNavegador = (clavePanel, claveListas) => {
     return {
       id: nuevoId(), ...datos,
       idAutor: autor.id ?? null, autor: nombreDe(autor), publicadoEl: new Date().toISOString(),
-      destinos: destinos.map(idGrupo => ({ idGrupo, nombre: nombreCanal(idGrupo), estado: 'pendiente' }))
+      destinos: destinos.map(idGrupo => ({ idGrupo, nombre: nombreCanal(idGrupo), estado }))
     }
   }
   const guardarNuevos = (nuevos) => (escribir(CLAVE_CLIPS, [...nuevos, ...leerClips()])

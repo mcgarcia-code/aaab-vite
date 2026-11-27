@@ -374,7 +374,7 @@ const notificar = inject('notificar')
 const {
   botones, sesion, video, segundosReloj, tagsOrdenados, tagsSinSincronizar,
   cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag, puedePublicar,
-  iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips, progresoSubida,
+  iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips, progresoSubida, publicaAutorizado,
   eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento
 } = useAaabTv()
 
@@ -718,7 +718,10 @@ const publicar = async () => {
     if (!res.ok) throw new Error(res.message)
     sesion.partido = formPublicar.partido.trim()
     mostrarPublicar.value = false
-    toast({ tipo: 'success', titulo: 'Enviado a AAAB TV', mensaje: `${res.payload === 1 ? 'El clip quedó pendiente' : `Los ${res.payload} clips quedaron pendientes`} hasta que el coordinador general autorice cada canal.` })
+    const uno = res.payload === 1
+    toast(publicaAutorizado.value
+      ? { tipo: 'success', titulo: 'Publicado en AAAB TV', mensaje: `${uno ? 'El clip ya está autorizado' : `Los ${res.payload} clips ya están autorizados`} en los canales elegidos.` }
+      : { tipo: 'success', titulo: 'Enviado a AAAB TV', mensaje: `${uno ? 'El clip quedó pendiente' : `Los ${res.payload} clips quedaron pendientes`} hasta que el coordinador general autorice cada canal.` })
     emit('publicado')
   } catch (e) {
     toast({ tipo: 'danger', titulo: 'No se pudo publicar', mensaje: e.message || 'Intentá de nuevo.' })

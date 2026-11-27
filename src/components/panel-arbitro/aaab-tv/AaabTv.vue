@@ -74,23 +74,7 @@
           </template>
 
           <!-- ======================= ESTUDIO ======================= -->
-          <template v-else>
-            <div class="pasos mb-3" role="tablist" aria-label="Pasos del estudio">
-              <button type="button" role="tab" :aria-selected="paso === 'panel'" :class="{ activo: paso === 'panel' }" @click="paso = 'panel'">
-                <span class="numero">1</span> Mi panel
-              </button>
-              <button type="button" role="tab" :aria-selected="paso === 'analizar'" :class="{ activo: paso === 'analizar' }" @click="paso = 'analizar'">
-                <span class="numero">2</span> Analizar
-              </button>
-              <!-- Videos externos (ej. de WhatsApp): solo observadores y coordinadores -->
-              <button v-if="puedePublicar" type="button" role="tab" :aria-selected="paso === 'subir'" :class="{ activo: paso === 'subir' }" @click="paso = 'subir'">
-                <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i> Subir video
-              </button>
-            </div>
-            <MiPanelTags v-if="paso === 'panel'" />
-            <SubirVideoExterno v-else-if="paso === 'subir' && puedePublicar" @publicado="irA('tv')" />
-            <AnalisisPartido v-else @publicado="irA('tv')" />
-          </template>
+          <EstudioAaabTv v-else @publicado="irA('tv')" />
         </div>
       </div>
     </div>
@@ -169,11 +153,9 @@ import ModalBase from '@/components/ModalBase.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
-import MiPanelTags from '@/components/panel-arbitro/aaab-tv/MiPanelTags.vue'
-import AnalisisPartido from '@/components/panel-arbitro/aaab-tv/AnalisisPartido.vue'
 import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'
 import ComentariosClip from '@/components/panel-arbitro/aaab-tv/ComentariosClip.vue'
-import SubirVideoExterno from '@/components/panel-arbitro/aaab-tv/SubirVideoExterno.vue'
+import EstudioAaabTv from '@/components/panel-arbitro/aaab-tv/EstudioAaabTv.vue'
 import { useAaabTv, colorTag, formatearTiempo, ESTADOS_DESTINO, claveCanal } from '@/composables/useAaabTv'
 import { NOMBRE_CANAL_PUBLICO } from '@/api/aaabTvClips'
 import { auth } from '@/api/auth'
@@ -187,16 +169,15 @@ const router = useRouter()
 const notificar = inject('notificar')
 const toast = inject('toast')
 const {
-  clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales, cargarPanel, sesion,
+  clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales, sesion,
   borrarClipPublicado, puedePublicar, tramoDe,
   listasReproduccion, cargarListasReproduccion, crearListaReproduccion, borrarListaReproduccion, cambiarClipEnLista
 } = useAaabTv()
 const usuario = auth.getUser() || {}
 
-// Clips, canales y listas del portal, y panel de botones del usuario (con servidor, el mismo en todos sus dispositivos)
+// Clips, canales y listas del portal (el panel de botones lo carga el Estudio)
 const errorClips = ref('')
 onMounted(async () => {
-  cargarPanel()
   cargarCanales()
   cargarListasReproduccion()
   const res = await cargarClips()
@@ -216,9 +197,6 @@ const destinosVisibles = (clip) => (esPropio(clip)
 // La pestaña queda en la URL (?vista=estudio) para volver al mismo lugar
 const vista = computed(() => (route.query.vista === 'estudio' ? 'estudio' : 'tv'))
 const irA = (destino) => router.replace({ query: destino === 'estudio' ? { vista: 'estudio' } : {} })
-
-// Si todavía no hay botones o tags, se arranca por "Mi panel"; si ya hay tags, por "Analizar"
-const paso = ref(sesion.tags.length ? 'analizar' : 'panel')
 
 // ─── Portal ─────────────────────────────────────────────────
 const busqueda = ref('')
@@ -348,40 +326,6 @@ const pestanasTv = computed(() => [
 </script>
 
 <style scoped>
-/* Pestañas AAAB TV / Estudio */
-/* Pasos del estudio */
-.pasos {
-  display: flex;
-  gap: 8px;
-  border-bottom: 1px solid var(--o-borde, #e2e8f0);
-}
-.pasos button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 4px 10px;
-  margin-bottom: -1px;
-  border: 0;
-  border-bottom: 3px solid transparent;
-  background: transparent;
-  font-weight: 800;
-  color: var(--o-texto-suave, #64748b);
-}
-.pasos button + button { margin-left: 12px; }
-.pasos button.activo { color: var(--o-texto, #0f172a); border-bottom-color: #dc2626; }
-.numero {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--o-chip, #e2e8f0);
-  color: var(--o-texto, #0f172a);
-  font-size: 0.75rem;
-}
-.pasos button.activo .numero { background: #dc2626; color: #fff; }
-
 /* Portal */
 .buscador { max-width: 460px; }
 .selector-vista { font-weight: 700; }

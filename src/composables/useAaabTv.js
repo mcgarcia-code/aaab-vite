@@ -1,7 +1,7 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { auth } from '@/api/auth'
 import { crearRepositorioEventos, resumirEvento, AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
-import { crearRepositorioClips, esRolPublicador } from '@/api/aaabTvClips'
+import { crearRepositorioClips, esRolPublicador, publicaAutorizado as publicaYaAutorizado } from '@/api/aaabTvClips'
 
 // =====================================================================
 // AAAB TV — Estudio de análisis de partidos + portal de clips
@@ -495,6 +495,8 @@ export function useAaabTv() {
 
   // ─── Permisos y reproducción ──────────────────────────────
   const puedePublicar = computed(() => esRolPublicador())
+  // El coordinador general (o el admin) no pasa por la autorización: lo suyo sale autorizado
+  const publicaAutorizado = computed(() => publicaYaAutorizado())
 
   // Qué reproducir de un clip: si el servidor ya lo cortó, el archivo del clip entero;
   // si no (maqueta), el tramo [inicio, fin] del video local de esta sesión
@@ -551,7 +553,7 @@ export function useAaabTv() {
     iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion,
     eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento,
     gruposPublicacion, cargarGruposPublicacion, publicarClips, publicarVideoExterno, progresoSubida, borrarClipPublicado,
-    puedePublicar, clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales, tramoDe,
+    puedePublicar, publicaAutorizado, clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales, tramoDe,
     clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip,
     listarComentarios, agregarComentario, borrarComentario,
     listasReproduccion, cargarListasReproduccion, crearListaReproduccion, borrarListaReproduccion, cambiarClipEnLista

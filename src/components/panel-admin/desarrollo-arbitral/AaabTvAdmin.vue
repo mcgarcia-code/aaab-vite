@@ -4,14 +4,24 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-bottom">
-          <p class="seccion-descripcion">Clips por autorizar · {{ pendientes }} {{ pendientes === 1 ? 'pendiente' : 'pendientes' }} de revisión</p>
-          <div class="input-group buscador">
-            <span class="input-group-text bg-white"><i class="bi bi-search" aria-hidden="true"></i></span>
-            <input v-model="busqueda" type="search" class="form-control border-start-0" aria-label="Buscar clips" placeholder="Título, partido, autor o canal">
-          </div>
+          <p class="seccion-descripcion">
+            <template v-if="vista === 'autorizar'">Clips por autorizar · {{ pendientes }} {{ pendientes === 1 ? 'pendiente' : 'pendientes' }} de revisión</template>
+            <template v-else>Analizá partidos y subí videos a AAAB TV</template>
+          </p>
+          <PestanasSeccion :model-value="vista" :pestanas="pestanas" llenar aria-label="AAAB TV" @update:model-value="irA" />
         </div>
 
         <div class="card-body p-3 p-md-4">
+          <!-- ======================= ESTUDIO ======================= -->
+          <EstudioAaabTv v-if="vista === 'estudio'" @publicado="alPublicar" />
+
+          <!-- ======================= AUTORIZAR ======================= -->
+          <template v-else>
+          <div class="input-group buscador mb-3">
+            <span class="input-group-text bg-white"><i class="bi bi-search" aria-hidden="true"></i></span>
+            <input v-model="busqueda" type="search" class="form-control border-start-0" aria-label="Buscar clips" placeholder="Título, partido, autor o canal">
+          </div>
+
           <!-- Filtro por estado -->
           <div class="estados mb-3" role="tablist" aria-label="Filtrar por estado">
             <button v-for="f in FILTROS" :key="f.clave" type="button" role="tab" :aria-selected="filtro === f.clave"
@@ -77,6 +87,7 @@
               </div>
             </li>
           </ul>
+          </template>
         </div>
       </div>
     </div>
@@ -141,6 +152,9 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'
 import ComentariosClip from '@/components/panel-arbitro/aaab-tv/ComentariosClip.vue'
+import EstudioAaabTv from '@/components/panel-arbitro/aaab-tv/EstudioAaabTv.vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   useAaabTv, ESTADOS_DESTINO, claveCanal, estadoGeneral, colorTag, formatearTiempo
 } from '@/composables/useAaabTv'
@@ -153,10 +167,29 @@ const toast = inject('toast')
 const { clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip, tramoDe } = useAaabTv()
 
 const errorCarga = ref('')
-onMounted(async () => {
+const recargar = async () => {
   const res = await cargarClipsModeracion()
   errorCarga.value = res?.ok ? '' : (res?.message || 'Intentá de nuevo en un rato.')
-})
+}
+onMounted(recargar)
+
+// ─── Pestañas: Autorizar / Estudio (queda en la URL: ?vista=estudio) ───
+// El coordinador general también analiza, arma su panel y sube videos, igual que en el panel árbitro
+const route = useRoute()
+const router = useRouter()
+const vista = computed(() => (route.query.vista === 'estudio' ? 'estudio' : 'autorizar'))
+const irA = (destino) => router.replace({ query: destino === 'estudio' ? { vista: 'estudio' } : {} })
+const pestanas = computed(() => [
+  { clave: 'autorizar', etiqueta: 'Autorizar', icono: 'bi-check2-square', cantidad: pendientes.value || null },
+  { clave: 'estudio', etiqueta: 'Estudio', icono: 'bi-camera-reels' }
+])
+
+// Lo que publica el coordinador general sale autorizado: se ve en Autorizar, filtro "Autorizados"
+const alPublicar = () => {
+  filtro.value = 'autorizado'
+  irA('autorizar')
+  recargar()
+}
 
 // Estado de conjunto: pendiente si algún canal espera revisión; si no, autorizado si se ve en algún canal
 const FILTROS = [

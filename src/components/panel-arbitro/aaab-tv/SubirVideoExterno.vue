@@ -7,8 +7,9 @@
         <p class="fw-bold mb-1">Subir un video externo</p>
         <p class="small mb-0">
           Usá esta pestaña para publicar jugadas que no salen de un análisis: por ejemplo, un video que te mandaron por WhatsApp.
-          El video se publica entero, como un solo clip, sin marcar tags ni sincronizar. Igual que los clips del análisis,
-          queda pendiente hasta que el coordinador general lo autorice en cada canal.
+          El video se publica entero, como un solo clip, sin marcar tags ni sincronizar.
+          <template v-if="publicaAutorizado">Como lo subís vos, sale autorizado en los canales que elijas.</template>
+          <template v-else>Igual que los clips del análisis, queda pendiente hasta que el coordinador general lo autorice en cada canal.</template>
         </p>
       </div>
     </div>
@@ -92,7 +93,7 @@ import SelectorCanales from '@/components/panel-arbitro/aaab-tv/SelectorCanales.
 // por fuera del análisis (ej. por WhatsApp) entero, como un solo clip, con el mismo circuito de canales.
 const emit = defineEmits(['publicado'])
 const toast = inject('toast')
-const { publicarVideoExterno, progresoSubida } = useAaabTv()
+const { publicarVideoExterno, progresoSubida, publicaAutorizado } = useAaabTv()
 
 // No se elige situación: todos los videos externos llevan esta etiqueta en el portal
 const ETIQUETA_EXTERNO = { nombre: 'Video externo', color: 'gris' }
@@ -158,7 +159,9 @@ const publicar = async () => {
       toast({ tipo: 'danger', titulo: 'No se pudo subir', mensaje: res?.message || 'Intentá de nuevo.' })
       return
     }
-    toast({ tipo: 'success', titulo: 'Enviado a AAAB TV', mensaje: 'El video quedó pendiente hasta que el coordinador general autorice cada canal.' })
+    toast(publicaAutorizado.value
+      ? { tipo: 'success', titulo: 'Publicado en AAAB TV', mensaje: 'El video ya está autorizado en los canales elegidos.' }
+      : { tipo: 'success', titulo: 'Enviado a AAAB TV', mensaje: 'El video quedó pendiente hasta que el coordinador general autorice cada canal.' })
     // La vista previa local deja de usarse (en la maqueta el portal usa su propia copia)
     liberarPrevia()
     archivo.value = null

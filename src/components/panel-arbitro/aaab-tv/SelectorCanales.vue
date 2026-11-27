@@ -1,7 +1,10 @@
 <template>
   <fieldset>
     <legend class="form-label small fw-bold mb-1">¿Dónde se publica? *</legend>
-    <p class="small text-muted mb-2">Podés elegir más de un canal. El coordinador general autoriza cada canal por separado.</p>
+    <p class="small text-muted mb-2">
+      Podés elegir más de un canal.
+      {{ publicaAutorizado ? 'Lo que publicás vos sale autorizado en todos.' : 'El coordinador general autoriza cada canal por separado.' }}
+    </p>
     <div class="canales" :class="{ 'con-error': invalido }">
       <label v-for="c in opcionesCanal" :key="c.clave" class="opcion-canal" :class="{ elegida: modelValue.includes(c.clave) }">
         <input type="checkbox" class="form-check-input mt-0" :value="c.clave" :checked="modelValue.includes(c.clave)" @change="alternar(c.clave)">
@@ -27,7 +30,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
-const { gruposPublicacion, cargarGruposPublicacion } = useAaabTv()
+const { gruposPublicacion, cargarGruposPublicacion, publicaAutorizado } = useAaabTv()
 
 const errorGrupos = ref('')
 const opcionesCanal = computed(() => [
